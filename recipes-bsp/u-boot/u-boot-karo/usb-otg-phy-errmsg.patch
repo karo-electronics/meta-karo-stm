@@ -1,0 +1,14 @@
+Index: u-boot/drivers/usb/gadget/gen_udc_otg_phy.c
+===================================================================
+--- u-boot.orig/drivers/usb/gadget/gen_udc_otg_phy.c
++++ u-boot/drivers/usb/gadget/gen_udc_otg_phy.c
+@@ -17,7 +17,8 @@ void otg_phy_init(struct dwc2_udc *dev)
+ 
+ 	if (uclass_get_device_by_of_offset(UCLASS_PHY,
+ 					   pdata->phy_of_node, &phy_dev)) {
+-		pr_err("failed to found usb phy\n");
++		pr_err("USB PHY not found via '%s'\n",
++		       fdt_get_name(gd->fdt_blob, pdata->phy_of_node, NULL));
+ 		hang();
+ 		return;
+ 	}

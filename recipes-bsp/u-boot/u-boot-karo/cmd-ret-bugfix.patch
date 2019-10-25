@@ -1,0 +1,55 @@
+Index: u-boot/cmd/mdio.c
+===================================================================
+--- u-boot.orig/cmd/mdio.c
++++ u-boot/cmd/mdio.c
+@@ -222,14 +222,14 @@ static int do_mdio(cmd_tbl_t *cmdtp, int
+ 				bus = phydev->bus;
+ 				extended = 1;
+ 			} else {
+-				return -1;
++				return CMD_RET_FAILURE;
+ 			}
+ 
+ 			if (!phydev->drv ||
+ 			    (!phydev->drv->writeext && (op[0] == 'w')) ||
+ 			    (!phydev->drv->readext && (op[0] == 'r'))) {
+ 				puts("PHY does not have extended functions\n");
+-				return -1;
++				return CMD_RET_FAILURE;
+ 			}
+ 		}
+ 	}
+@@ -242,13 +242,13 @@ static int do_mdio(cmd_tbl_t *cmdtp, int
+ 		if (pos > 1)
+ 			if (extract_reg_range(argv[pos--], &devadlo, &devadhi,
+ 					      &reglo, &reghi))
+-				return -1;
++				return CMD_RET_FAILURE;
+ 
+ 	default:
+ 		if (pos > 1)
+ 			if (extract_phy_range(&argv[2], pos - 1, &bus,
+ 					      &phydev, &addrlo, &addrhi))
+-				return -1;
++				return CMD_RET_FAILURE;
+ 
+ 		break;
+ 	}
+@@ -256,7 +256,7 @@ static int do_mdio(cmd_tbl_t *cmdtp, int
+ 	if (op[0] == 'l') {
+ 		mdio_list_devices();
+ 
+-		return 0;
++		return CMD_RET_SUCCESS;
+ 	}
+ 
+ 	/* Save the chosen bus */
+@@ -286,7 +286,7 @@ static int do_mdio(cmd_tbl_t *cmdtp, int
+ 	last_reg_hi  = reghi;
+ 	last_data    = data;
+ 
+-	return 0;
++	return CMD_RET_SUCCESS;
+ }
+ 
+ /***************************************************/

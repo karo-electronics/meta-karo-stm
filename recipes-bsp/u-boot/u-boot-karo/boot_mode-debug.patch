@@ -1,0 +1,14 @@
+Index: u-boot/arch/arm/mach-stm32mp/cpu.c
+===================================================================
+--- u-boot.orig/arch/arm/mach-stm32mp/cpu.c
++++ u-boot/arch/arm/mach-stm32mp/cpu.c
+@@ -446,6 +446,9 @@ static void setup_boot_mode(void)
+ 		pr_debug("unexpected forced boot mode = %x\n", forced_mode);
+ 		break;
+ 	}
++	debug("%s@%d: boot_device='%s' boot_instance='%s' preboot='%s'\n",
++	      __func__, __LINE__, env_get("boot_device"),
++	      env_get("boot_instance"), env_get("preboot"));
+ 
+ 	/* clear TAMP for next reboot */
+ 	clrsetbits_le32(TAMP_BOOT_CONTEXT, TAMP_BOOT_FORCED_MASK, BOOT_NORMAL);

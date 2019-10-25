@@ -1,0 +1,71 @@
+Index: u-boot/drivers/mtd/nand/spi/core.c
+===================================================================
+--- u-boot.orig/drivers/mtd/nand/spi/core.c
++++ u-boot/drivers/mtd/nand/spi/core.c
+@@ -77,8 +77,7 @@ static int spinand_get_cfg(struct spinan
+ {
+ 	struct nand_device *nand = spinand_to_nand(spinand);
+ 
+-	if (WARN_ON(spinand->cur_target < 0 ||
+-		    spinand->cur_target >= nand->memorg.ntargets))
++	if (WARN_ON(spinand->cur_target >= nand->memorg.ntargets))
+ 		return -EINVAL;
+ 
+ 	*cfg = spinand->cfg_cache[spinand->cur_target];
+@@ -90,8 +89,7 @@ static int spinand_set_cfg(struct spinan
+ 	struct nand_device *nand = spinand_to_nand(spinand);
+ 	int ret;
+ 
+-	if (WARN_ON(spinand->cur_target < 0 ||
+-		    spinand->cur_target >= nand->memorg.ntargets))
++	if (WARN_ON(spinand->cur_target >= nand->memorg.ntargets))
+ 		return -EINVAL;
+ 
+ 	if (spinand->cfg_cache[spinand->cur_target] == cfg)
+Index: u-boot/drivers/mtd/ubi/vmt.c
+===================================================================
+--- u-boot.orig/drivers/mtd/ubi/vmt.c
++++ u-boot/drivers/mtd/ubi/vmt.c
+@@ -743,8 +743,7 @@ static int self_check_volume(struct ubi_
+ 			ubi_err(ubi, "bad used_ebs");
+ 			goto fail;
+ 		}
+-		if (vol->last_eb_bytes < 0 ||
+-		    vol->last_eb_bytes > vol->usable_leb_size) {
++		if (vol->last_eb_bytes > vol->usable_leb_size) {
+ 			ubi_err(ubi, "bad last_eb_bytes");
+ 			goto fail;
+ 		}
+Index: u-boot/fs/fat/fat_write.c
+===================================================================
+--- u-boot.orig/fs/fat/fat_write.c
++++ u-boot/fs/fat/fat_write.c
+@@ -1028,7 +1028,7 @@ static int normalize_longname(char *l_fi
+ 		if (strchr(legal, c))
+ 			continue;
+ 		/* extended code */
+-		if ((0x80 <= c) && (c <= 0xff))
++		if (c >= 0x80)
+ 			continue;
+ 
+ 		return -1;
+Index: u-boot/drivers/pinctrl/pinctrl-stmfx.c
+===================================================================
+--- u-boot.orig/drivers/pinctrl/pinctrl-stmfx.c
++++ u-boot/drivers/pinctrl/pinctrl-stmfx.c
+@@ -352,11 +352,12 @@ static int stmfx_chip_init(struct udevic
+ 	int ret;
+ 	struct dm_i2c_chip *chip = dev_get_parent_platdata(dev);
+ 
+-	id = dm_i2c_reg_read(dev, STMFX_REG_CHIP_ID);
+-	if (id < 0) {
+-		dev_err(dev, "error reading chip id: %d\n", id);
++	ret = dm_i2c_reg_read(dev, STMFX_REG_CHIP_ID);
++	if (ret < 0) {
++		dev_err(dev, "error reading chip id: %d\n", ret);
+ 		return ret;
+ 	}
++	id = ret;
+ 	/*
+ 	 * Check that ID is the complement of the I2C address:
+ 	 * STMFX I2C address follows the 7-bit format (MSB), that's why

@@ -1,0 +1,465 @@
+Index: u-boot/drivers/mmc/mmc-uclass.c
+===================================================================
+--- u-boot.orig/drivers/mmc/mmc-uclass.c
++++ u-boot/drivers/mmc/mmc-uclass.c
+@@ -357,7 +357,7 @@ static int mmc_blk_probe(struct udevice
+ 
+ 	ret = mmc_init(mmc);
+ 	if (ret) {
+-		debug("%s: mmc_init() failed (err=%d)\n", __func__, ret);
++		pr_err("%s: mmc_init() failed (err=%d)\n", __func__, ret);
+ 		return ret;
+ 	}
+ 
+Index: u-boot/drivers/mmc/mmc.c
+===================================================================
+--- u-boot.orig/drivers/mmc/mmc.c
++++ u-boot/drivers/mmc/mmc.c
+@@ -642,7 +642,7 @@ static int mmc_send_op_cond(struct mmc *
+ 	/* Some cards seem to need this */
+ 	mmc_go_idle(mmc);
+ 
+- 	/* Asking to the card its capabilities */
++	/* Asking to the card its capabilities */
+ 	for (i = 0; i < 2; i++) {
+ 		err = mmc_send_op_cond_iter(mmc, i != 0);
+ 		if (err)
+@@ -817,7 +817,7 @@ static int mmc_get_capabilities(struct m
+ 		return 0;
+ 
+ 	if (!ext_csd) {
+-		pr_err("No ext_csd found!\n"); /* this should enver happen */
++		pr_err("No ext_csd found!\n"); /* this should never happen */
+ 		return -ENOTSUPP;
+ 	}
+ 
+@@ -1321,8 +1321,10 @@ static int sd_set_card_speed(struct mmc
+ 	if (err)
+ 		return err;
+ 
+-	if (((__be32_to_cpu(switch_status[4]) >> 24) & 0xF) != speed)
++	if (((__be32_to_cpu(switch_status[4]) >> 24) & 0xF) != speed) {
++		pr_err("SD/MMC speed %u not supported\n", speed);
+ 		return -ENOTSUPP;
++	}
+ 
+ 	return 0;
+ }
+@@ -1912,7 +1914,7 @@ static int mmc_select_mode_and_width(str
+ 		return 0;
+ 
+ 	if (!mmc->ext_csd) {
+-		pr_debug("No ext_csd found!\n"); /* this should enver happen */
++		pr_err("No ext_csd found!\n"); /* this should never happen */
+ 		return -ENOTSUPP;
+ 	}
+ 
+@@ -2462,7 +2464,6 @@ static int mmc_send_if_cond(struct mmc *
+ 	cmd.resp_type = MMC_RSP_R7;
+ 
+ 	err = mmc_send_cmd(mmc, &cmd, NULL);
+-
+ 	if (err)
+ 		return err;
+ 
+@@ -2629,7 +2630,7 @@ retry:
+ 	if (err)
+ 		return err;
+ 
+-	/* The internal partition reset to user partition(0) at every CMD0*/
++	/* The internal partition reset to user partition(0) at every CMD0 */
+ 	mmc_get_blk_desc(mmc)->hwpart = 0;
+ 
+ 	/* Test for SD version 2 */
+@@ -2801,11 +2802,11 @@ static int mmc_probe(bd_t *bis)
+ 
+ int mmc_initialize(bd_t *bis)
+ {
+-	static int initialized = 0;
++	static int initialized;
+ 	int ret;
++
+ 	if (initialized)	/* Avoid initializing mmc multiple times */
+ 		return 0;
+-	initialized = 1;
+ 
+ #if !CONFIG_IS_ENABLED(BLK)
+ #if !CONFIG_IS_ENABLED(MMC_TINY)
+@@ -2816,11 +2817,11 @@ int mmc_initialize(bd_t *bis)
+ 	if (ret)
+ 		return ret;
+ 
++	mmc_do_preinit();
+ #ifndef CONFIG_SPL_BUILD
+ 	print_mmc_devices(',');
+ #endif
+-
+-	mmc_do_preinit();
++	initialized = 1;
+ 	return 0;
+ }
+ 
+Index: u-boot/drivers/mtd/spi/spi_flash.c
+===================================================================
+--- u-boot.orig/drivers/mtd/spi/spi_flash.c
++++ u-boot/drivers/mtd/spi/spi_flash.c
+@@ -37,7 +37,7 @@ static int read_sr(struct spi_flash *fla
+ 	cmd = CMD_READ_STATUS;
+ 	ret = spi_flash_read_common(flash, &cmd, 1, rs, 1);
+ 	if (ret < 0) {
+-		debug("SF: fail to read status register\n");
++		pr_err("SF: fail to read status register\n");
+ 		return ret;
+ 	}
+ 
+@@ -51,7 +51,7 @@ static int read_fsr(struct spi_flash *fl
+ 
+ 	ret = spi_flash_read_common(flash, &cmd, 1, fsr, 1);
+ 	if (ret < 0) {
+-		debug("SF: fail to read flag status register\n");
++		pr_err("SF: fail to read flag status register\n");
+ 		return ret;
+ 	}
+ 
+@@ -66,7 +66,7 @@ static int write_sr(struct spi_flash *fl
+ 	cmd = CMD_WRITE_STATUS;
+ 	ret = spi_flash_write_common(flash, &cmd, 1, &ws, 1);
+ 	if (ret < 0) {
+-		debug("SF: fail to write status register\n");
++		pr_err("SF: fail to write status register\n");
+ 		return ret;
+ 	}
+ 
+@@ -82,7 +82,7 @@ static int read_cr(struct spi_flash *fla
+ 	cmd = CMD_READ_CONFIG;
+ 	ret = spi_flash_read_common(flash, &cmd, 1, rc, 1);
+ 	if (ret < 0) {
+-		debug("SF: fail to read config register\n");
++		pr_err("SF: fail to read config register\n");
+ 		return ret;
+ 	}
+ 
+@@ -103,7 +103,7 @@ static int write_cr(struct spi_flash *fl
+ 	data[1] = wc;
+ 	ret = spi_flash_write_common(flash, &cmd, 1, &data, 2);
+ 	if (ret) {
+-		debug("SF: fail to write config register\n");
++		pr_err("SF: fail to write config register\n");
+ 		return ret;
+ 	}
+ 
+@@ -146,7 +146,7 @@ static int write_bar(struct spi_flash *f
+ 	cmd = flash->bank_write_cmd;
+ 	ret = spi_flash_write_common(flash, &cmd, 1, &bank_sel, 1);
+ 	if (ret < 0) {
+-		debug("SF: fail to write bank register\n");
++		pr_err("SF: fail to write bank register\n");
+ 		return ret;
+ 	}
+ 
+@@ -176,7 +176,7 @@ static int read_bar(struct spi_flash *fl
+ 	ret = spi_flash_read_common(flash, &flash->bank_read_cmd, 1,
+ 				    &curr_bank, 1);
+ 	if (ret) {
+-		debug("SF: fail to read bank addr register\n");
++		pr_err("SF: fail to read bank addr register\n");
+ 		return ret;
+ 	}
+ 
+@@ -202,8 +202,7 @@ static void spi_flash_dual(struct spi_fl
+ 		*addr >>= flash->shift;
+ 		break;
+ 	default:
+-		debug("SF: Unsupported dual_flash=%d\n", flash->dual_flash);
+-		break;
++		pr_err("SF: Unsupported dual_flash=%d\n", flash->dual_flash);
+ 	}
+ }
+ #endif
+@@ -283,27 +282,27 @@ int spi_flash_write_common(struct spi_fl
+ 
+ 	ret = spi_claim_bus(spi);
+ 	if (ret) {
+-		debug("SF: unable to claim SPI bus\n");
++		pr_err("SF: unable to claim SPI bus\n");
+ 		return ret;
+ 	}
+ 
+ 	ret = spi_flash_cmd_write_enable(flash);
+ 	if (ret < 0) {
+-		debug("SF: enabling write failed\n");
++		pr_err("SF: enabling write failed\n");
+ 		return ret;
+ 	}
+ 
+ 	ret = spi_flash_cmd_write(spi, cmd, cmd_len, buf, buf_len);
+ 	if (ret < 0) {
+-		debug("SF: write cmd failed\n");
++		pr_err("SF: write cmd failed\n");
+ 		return ret;
+ 	}
+ 
+ 	ret = spi_flash_wait_till_ready(flash, timeout);
+ 	if (ret < 0) {
+-		debug("SF: write %s timed out\n",
+-		      timeout == SPI_FLASH_PROG_TIMEOUT ?
+-			"program" : "page erase");
++		pr_err("SF: write %s timed out\n",
++		       timeout == SPI_FLASH_PROG_TIMEOUT ?
++		       "program" : "page erase");
+ 		return ret;
+ 	}
+ 
+@@ -352,7 +351,7 @@ int spi_flash_cmd_erase_ops(struct spi_f
+ 
+ 		ret = spi_flash_write_common(flash, cmd, sizeof(cmd), NULL, 0);
+ 		if (ret < 0) {
+-			debug("SF: erase failed\n");
++			pr_err("SF: erase failed\n");
+ 			break;
+ 		}
+ 
+@@ -417,7 +416,7 @@ int spi_flash_cmd_write_ops(struct spi_f
+ 		ret = spi_flash_write_common(flash, cmd, sizeof(cmd),
+ 					buf + actual, chunk_len);
+ 		if (ret < 0) {
+-			debug("SF: write failed\n");
++			pr_err("SF: write failed\n");
+ 			break;
+ 		}
+ 
+@@ -441,13 +440,13 @@ int spi_flash_read_common(struct spi_fla
+ 
+ 	ret = spi_claim_bus(spi);
+ 	if (ret) {
+-		debug("SF: unable to claim SPI bus\n");
++		pr_err("SF: unable to claim SPI bus\n");
+ 		return ret;
+ 	}
+ 
+ 	ret = spi_flash_cmd_read(spi, cmd, cmd_len, data, data_len);
+ 	if (ret < 0) {
+-		debug("SF: read cmd failed\n");
++		pr_err("SF: read cmd failed\n");
+ 		return ret;
+ 	}
+ 
+@@ -482,7 +481,7 @@ int spi_flash_cmd_read_ops(struct spi_fl
+ 	if (flash->memory_map) {
+ 		ret = spi_claim_bus(spi);
+ 		if (ret) {
+-			debug("SF: unable to claim SPI bus\n");
++			pr_err("SF: unable to claim SPI bus\n");
+ 			return log_ret(ret);
+ 		}
+ 		spi_xfer(spi, 0, NULL, NULL, SPI_XFER_MMAP);
+@@ -523,7 +522,7 @@ int spi_flash_cmd_read_ops(struct spi_fl
+ 
+ 		ret = spi_flash_read_common(flash, cmd, cmdsz, data, read_len);
+ 		if (ret < 0) {
+-			debug("SF: read failed\n");
++			pr_err("SF: read failed\n");
+ 			break;
+ 		}
+ 
+@@ -735,7 +734,7 @@ int sst_write_wp(struct spi_flash *flash
+ 
+ 	ret = spi_claim_bus(spi);
+ 	if (ret) {
+-		debug("SF: Unable to claim SPI bus\n");
++		pr_err("SF: Unable to claim SPI bus\n");
+ 		return ret;
+ 	}
+ 
+@@ -766,7 +765,7 @@ int sst_write_wp(struct spi_flash *flash
+ 		ret = spi_flash_cmd_write(spi, cmd, cmd_len,
+ 					buf + actual, 2);
+ 		if (ret) {
+-			debug("SF: sst word program failed\n");
++			pr_err("SF: sst word program failed\n");
+ 			break;
+ 		}
+ 
+@@ -804,14 +803,14 @@ int sst_write_bp(struct spi_flash *flash
+ 
+ 	ret = spi_claim_bus(spi);
+ 	if (ret) {
+-		debug("SF: Unable to claim SPI bus\n");
++		pr_err("SF: Unable to claim SPI bus\n");
+ 		return ret;
+ 	}
+ 
+ 	for (actual = 0; actual < len; actual++) {
+ 		ret = sst_byte_write(flash, offset, buf + actual);
+ 		if (ret) {
+-			debug("SF: sst byte program failed\n");
++			pr_err("SF: sst byte program failed\n");
+ 			break;
+ 		}
+ 		offset++;
+@@ -1120,12 +1119,12 @@ int spi_flash_decode_fdt(struct spi_flas
+ 
+ 	addr = dev_read_addr_size(flash->dev, "memory-map", &size);
+ 	if (addr == FDT_ADDR_T_NONE) {
+-		debug("%s: Cannot decode address\n", __func__);
++		pr_err("%s: Cannot decode address\n", __func__);
+ 		return 0;
+ 	}
+ 
+ 	if (flash->size > size) {
+-		debug("%s: Memory map must cover entire device\n", __func__);
++		pr_err("%s: Memory map must cover entire device\n", __func__);
+ 		return -1;
+ 	}
+ 	flash->memory_map = map_sysmem(addr, size);
+@@ -1265,8 +1264,8 @@ int spi_flash_scan(struct spi_flash *fla
+ 	    (flash->write_cmd == CMD_QUAD_PAGE_PROGRAM)) {
+ 		ret = set_quad_mode(flash, info);
+ 		if (ret) {
+-			debug("SF: Fail to set QEB for %02x\n",
+-			      JEDEC_MFR(info));
++			pr_err("SF: Fail to set QEB for %02x\n",
++			       JEDEC_MFR(info));
+ 			return -EINVAL;
+ 		}
+ 	}
+@@ -1305,7 +1304,7 @@ int spi_flash_scan(struct spi_flash *fla
+ #if CONFIG_IS_ENABLED(OF_CONTROL) && !CONFIG_IS_ENABLED(OF_PLATDATA)
+ 	ret = spi_flash_decode_fdt(flash);
+ 	if (ret) {
+-		debug("SF: FDT decode error\n");
++		pr_err("SF: FDT decode error\n");
+ 		return -EINVAL;
+ 	}
+ #endif
+Index: u-boot/drivers/spi/stm32_qspi.c
+===================================================================
+--- u-boot.orig/drivers/spi/stm32_qspi.c
++++ u-boot/drivers/spi/stm32_qspi.c
+@@ -164,8 +164,8 @@ enum STM32_QSPI_CCR_FMODE {
+ #define STM32_ABT_TIMEOUT_US 100000
+ 
+ struct stm32_qspi_platdata {
+-	u32 base;
+-	u32 memory_map;
++	uintptr_t base;
++	uintptr_t memory_map;
+ 	u32 max_hz;
+ };
+ 
+@@ -375,17 +375,17 @@ static int _stm32_qspi_xfer(struct stm32
+ 		return -1;
+ 
+ 	if (bitlen % 8) {
+-		debug("spi_xfer: Non byte aligned SPI transfer\n");
++		pr_err("spi_xfer: Non byte aligned SPI transfer\n");
+ 		return -1;
+ 	}
+ 
+ 	if (dout && din) {
+-		debug("spi_xfer: QSPI cannot have data in and data out set\n");
++		pr_err("spi_xfer: QSPI cannot have data in and data out set\n");
+ 		return -1;
+ 	}
+ 
+ 	if (!dout && (flags & SPI_XFER_BEGIN)) {
+-		debug("spi_xfer: QSPI transfer must begin with command\n");
++		pr_err("spi_xfer: QSPI transfer must begin with command\n");
+ 		return -1;
+ 	}
+ 
+@@ -568,12 +568,13 @@ static int stm32_qspi_ofdata_to_platdata
+ 
+ 	ret = dev_read_resource_byname(bus, "qspi", &res_regs);
+ 	if (ret) {
+-		debug("Error: can't get regs base addresses(ret = %d)!\n", ret);
++		pr_err("Error: can't get regs base addresses(ret = %d)!\n",
++		       ret);
+ 		return -ENOMEM;
+ 	}
+ 	ret = dev_read_resource_byname(bus, "qspi_mm", &res_mem);
+ 	if (ret) {
+-		debug("Error: can't get mmap base address(ret = %d)!\n", ret);
++		pr_err("Error: can't get mmap base address(ret = %d)!\n", ret);
+ 		return -ENOMEM;
+ 	}
+ 
+@@ -583,12 +584,8 @@ static int stm32_qspi_ofdata_to_platdata
+ 	plat->base = res_regs.start;
+ 	plat->memory_map = res_mem.start;
+ 
+-	debug("%s: regs=<0x%x> mapped=<0x%x>, max-frequency=%d\n",
+-	      __func__,
+-	      plat->base,
+-	      plat->memory_map,
+-	      plat->max_hz
+-	      );
++	debug("%s: regs=<0x%08lx> mapped=<0x%08lx>, max-frequency=%u\n",
++	      __func__, plat->base, plat->memory_map, plat->max_hz);
+ 
+ 	return 0;
+ }
+@@ -620,9 +617,9 @@ static int stm32_qspi_probe(struct udevi
+ 	}
+ 
+ 	priv->clock_rate = clk_get_rate(&clk);
+-	if (!priv->clock_rate) {
++	if (!priv->clock_rate || IS_ERR_VALUE(priv->clock_rate)) {
+ 		clk_disable(&clk);
+-		return -EINVAL;
++		return priv->clock_rate ?: -EINVAL;
+ 	}
+ 
+ 	ret = reset_get_by_index(bus, 0, &reset_ctl);
+@@ -715,7 +712,7 @@ static int stm32_qspi_set_speed(struct u
+ 	struct stm32_qspi_platdata *plat = bus->platdata;
+ 	struct stm32_qspi_priv *priv = dev_get_priv(bus);
+ 	u32 qspi_clk = priv->clock_rate;
+-	u32 prescaler = 255;
++	int prescaler = 255;
+ 	u32 csht;
+ 	int ret;
+ 
+Index: u-boot/drivers/video/video-uclass.c
+===================================================================
+--- u-boot.orig/drivers/video/video-uclass.c
++++ u-boot/drivers/video/video-uclass.c
+@@ -76,11 +76,11 @@ int video_reserve(ulong *addrp)
+ 	     dev;
+ 	     uclass_find_next_device(&dev)) {
+ 		size = alloc_fb(dev, addrp);
+-		debug("%s: Reserving %lx bytes at %lx for video device '%s'\n",
++		debug("%s: Reserving %08lx bytes at %08lx for video device '%s'\n",
+ 		      __func__, size, *addrp, dev->name);
+ 	}
+ 	gd->video_bottom = *addrp;
+-	debug("Video frame buffers from %lx to %lx\n", gd->video_bottom,
++	debug("Video frame buffers from %08lx to %08lx\n", gd->video_bottom,
+ 	      gd->video_top);
+ 
+ 	return 0;
+@@ -253,13 +253,13 @@ static int video_post_probe(struct udevi
+ 		drv_name = priv->vidconsole_drv_name;
+ 	ret = device_bind_driver(dev, drv_name, str, &cons);
+ 	if (ret) {
+-		debug("%s: Cannot bind console driver\n", __func__);
++		pr_err("%s: Cannot bind console driver\n", __func__);
+ 		return ret;
+ 	}
+ 
+ 	ret = device_probe(cons);
+ 	if (ret) {
+-		debug("%s: Cannot probe console driver\n", __func__);
++		pr_err("%s: Cannot probe console driver\n", __func__);
+ 		return ret;
+ 	}
+ 
+@@ -284,7 +284,7 @@ static int video_post_bind(struct udevic
+ 		       dev->name);
+ 		return -ENOSPC;
+ 	}
+-	debug("%s: Claiming %lx bytes at %lx for video device '%s'\n",
++	debug("%s: Claiming %08lx bytes at %08lx for video device '%s'\n",
+ 	      __func__, size, addr, dev->name);
+ 	gd->video_bottom = addr;
+ 

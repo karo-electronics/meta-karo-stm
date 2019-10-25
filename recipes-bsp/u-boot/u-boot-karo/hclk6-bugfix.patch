@@ -1,0 +1,24 @@
+Index: u-boot/drivers/clk/clk_stm32mp1.c
+===================================================================
+--- u-boot.orig/drivers/clk/clk_stm32mp1.c
++++ u-boot/drivers/clk/clk_stm32mp1.c
+@@ -733,7 +733,7 @@ char * const stm32mp1_clk_parent_name[_P
+ 	[_PCLK3] = "PCLK3",
+ 	[_PCLK4] = "PCLK4",
+ 	[_PCLK5] = "PCLK5",
+-	[_HCLK6] = "KCLK6",
++	[_HCLK6] = "HCLK6",
+ 	[_HCLK2] = "HCLK2",
+ 	[_CK_PER] = "CK_PER",
+ 	[_CK_MPU] = "CK_MPU",
+@@ -2018,8 +2018,8 @@ static void  __maybe_unused stm32mp1_clk
+ 			       stm32mp1_clk_parent_sel_name[i], i,
+ 			       stm32mp1_clk_parent_name[s], s);
+ 		} else {
+-			printf("- %s(%d) => parent index %d is invalid\n",
+-			       stm32mp1_clk_parent_sel_name[i], i, p);
++			printf("- %s(%d) => DISABLED\n",
++			       stm32mp1_clk_parent_sel_name[i], i);
+ 		}
+ 	}
+ }

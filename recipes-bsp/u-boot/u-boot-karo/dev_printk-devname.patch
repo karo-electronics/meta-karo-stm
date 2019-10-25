@@ -1,0 +1,48 @@
+Index: u-boot/include/dm/device.h
+===================================================================
+--- u-boot.orig/include/dm/device.h
++++ u-boot/include/dm/device.h
+@@ -951,6 +951,7 @@ static inline void devm_kfree(struct ude
+  */
+ #define dev_printk(dev, fmt, ...)				\
+ ({								\
++	printk("%s: ", dev_read_name(dev));			\
+ 	printk(fmt, ##__VA_ARGS__);				\
+ })
+ 
+Index: u-boot/drivers/phy/phy-stm32-usbphyc.c
+===================================================================
+--- u-boot.orig/drivers/phy/phy-stm32-usbphyc.c
++++ u-boot/drivers/phy/phy-stm32-usbphyc.c
+@@ -240,7 +240,7 @@ static int stm32_usbphyc_of_xlate(struct
+ 
+ 	if ((phy->id == 0 && args->args_count != 1) ||
+ 	    (phy->id == 1 && args->args_count != 2)) {
+-		dev_err(dev, "invalid number of cells for phy port%ld\n",
++		dev_err(phy->dev, "invalid number of cells for phy port%ld\n",
+ 			phy->id);
+ 		return -EINVAL;
+ 	}
+@@ -315,7 +315,7 @@ static int stm32_usbphyc_probe(struct ud
+ 
+ static const struct udevice_id stm32_usbphyc_of_match[] = {
+ 	{ .compatible = "st,stm32mp1-usbphyc", },
+-	{ },
++	{ }
+ };
+ 
+ U_BOOT_DRIVER(stm32_usb_phyc) = {
+Index: u-boot/drivers/video/dw_mipi_dsi.c
+===================================================================
+--- u-boot.orig/drivers/video/dw_mipi_dsi.c
++++ u-boot/drivers/video/dw_mipi_dsi.c
+@@ -793,7 +793,8 @@ int dw_mipi_dsi_init_bridge(struct mipi_
+ 						   dev_of_offset(panel),
+ 						   0, &timings);
+ 		if (ret) {
+-			dev_err(dev, "decode display timing error %d\n", ret);
++			dev_err(device->dev, "decode display timing error %d\n",
++				ret);
+ 			return ret;
+ 		}
+ 	}
