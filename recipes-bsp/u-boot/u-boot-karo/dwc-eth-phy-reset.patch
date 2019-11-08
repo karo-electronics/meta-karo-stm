@@ -60,15 +60,6 @@ Index: u-boot/drivers/net/dwc_eth_qos.c
  	return 0;
  }
  
-@@ -1238,7 +1275,7 @@ static int eqos_start(struct udevice *de
- err_shutdown_phy:
- 	phy_shutdown(eqos->phy);
- err:
--	pr_err("FAILED: %d\n", ret);
-+	pr_err("%s() FAILED: %d\n", __func__, ret);
- 	return ret;
- }
- 
 @@ -1468,6 +1505,7 @@ static int eqos_probe_resources_tegra186
  		pr_err("gpio_request_by_name(phy reset) failed: %d\n", ret);
  		goto err_free_reset_eqos;

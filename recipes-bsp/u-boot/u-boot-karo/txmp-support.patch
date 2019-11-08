@@ -2,7 +2,7 @@ Index: u-boot/board/karo/txmp/txmp.c
 ===================================================================
 --- /dev/null
 +++ u-boot/board/karo/txmp/txmp.c
-@@ -0,0 +1,921 @@
+@@ -0,0 +1,944 @@
 +// SPDX-License-Identifier: GPL-2.0
 +/*
 + * Copyright (C) 2019, Lothar Waßmann <LW@KARO-electronics.de>
@@ -148,8 +148,8 @@ Index: u-boot/board/karo/txmp/txmp.c
 +
 +#if defined(CONFIG_KARO_TXMP_1531)
 +	printf("Board: TXMP-1531 in %s mode", mode);
-+#elif defined(CONFIG_KARO_QSMP_157A)
-+	printf("Board: QSMP-157C in %s mode", mode);
++#elif defined(CONFIG_KARO_QSMP_1570)
++	printf("Board: QSMP-1570 in %s mode", mode);
 +#else
 +#error Unsupported Board type
 +#endif
@@ -184,16 +184,19 @@ Index: u-boot/board/karo/txmp/txmp.c
 +	struct gpio_desc gpio;
 +	enum forced_boot_mode boot_mode = BOOT_NORMAL;
 +
++	if (had_ctrlc())
++		return;
++
 +	node = ofnode_path("/config");
 +	if (!ofnode_valid(node)) {
-+		pr_err("%s: no /config node?\n", __func__);
++		pr_debug("%s: no /config node?\n", __func__);
 +		return;
 +	}
 +#ifdef CONFIG_FASTBOOT
 +	if (gpio_request_by_name_nodev(node, "st,fastboot-gpios", 0,
 +				       &gpio, GPIOD_IS_IN)) {
-+		pr_warn("%s: could not find /config/st,fastboot-gpios\n",
-+			__func__);
++		pr_debug("%s: could not find /config/st,fastboot-gpios\n",
++			 __func__);
 +	} else {
 +		if (dm_gpio_get_value(&gpio)) {
 +			puts("Fastboot key pressed, ");
@@ -206,8 +209,8 @@ Index: u-boot/board/karo/txmp/txmp.c
 +#ifdef CONFIG_CMD_STM32PROG
 +	if (gpio_request_by_name_nodev(node, "st,stm32prog-gpios", 0,
 +				       &gpio, GPIOD_IS_IN)) {
-+		pr_warn("%s: could not find /config/st,stm32prog-gpios\n",
-+			__func__);
++		pr_debug("%s: could not find /config/st,stm32prog-gpios\n",
++			 __func__);
 +	} else {
 +		if (dm_gpio_get_value(&gpio)) {
 +			puts("STM32Programmer key pressed, ");
@@ -450,7 +453,8 @@ Index: u-boot/board/karo/txmp/txmp.c
 +	int ret = adc_channel_single_shot("adc@100", 12, &temp);
 +
 +	if (ret) {
-+		printf("Failed to read ADC: %d\n", ret);
++		if (ret != -ENODEV)
++			printf("Failed to read ADC: %d\n", ret);
 +		return ret;
 +	}
 +	if (temp != last_temp) {
@@ -761,13 +765,16 @@ Index: u-boot/board/karo/txmp/txmp.c
 +		debug("probe pincontrol = %s\n", dev->name);
 +	}
 +
-+	show_bmp_logo();
-+
-+	board_key_check();
-+
-+	txmp_setup_led();
-+
 +	sysconf_init();
++
++	if (ctrlc()) {
++		printf("<CTRL-C> detected; safeboot enabled\n");
++		env_set_hex("safeboot", 1);
++	} else {
++		show_bmp_logo();
++		board_key_check();
++		txmp_setup_led();
++	}
 +
 +	board_usbotg_init();
 +
@@ -816,6 +823,7 @@ Index: u-boot/board/karo/txmp/txmp.c
 +			env_set("board_name", fdt_compat + 3);
 +	}
 +#endif
++	clear_ctrlc();
 +	return 0;
 +}
 +
@@ -857,16 +865,27 @@ Index: u-boot/board/karo/txmp/txmp.c
 +#endif
 +
 +#if defined(CONFIG_OF_BOARD_SETUP)
-+int ft_board_setup(void *blob, bd_t *bd)
-+{
-+	ulong copro_rsc_addr, copro_rsc_size;
-+	int off;
-+	char *s_copro = NULL;
 +
 +#ifdef CONFIG_FDT_FIXUP_PARTITIONS
 +	struct node_info nodes[] = {
 +		{ "st,stm32f469-qspi",		MTD_DEV_TYPE_NOR,  },
 +	};
++#endif
++
++int ft_board_setup(void *blob, bd_t *bd)
++{
++	int ret;
++	ulong copro_rsc_addr, copro_rsc_size;
++	int off;
++	char *s_copro = NULL;
++	const char *videomode;
++
++	ret = fdt_increase_size(blob, 4096);
++	if (ret)
++		printf("Warning: Failed to increase FDT size: %s\n",
++		       fdt_strerror(ret));
++
++#ifdef CONFIG_FDT_FIXUP_PARTITIONS
 +	fdt_fixup_mtdparts(blob, nodes, ARRAY_SIZE(nodes));
 +#endif
 +
@@ -889,6 +908,10 @@ Index: u-boot/board/karo/txmp/txmp.c
 +			fdt_delprop(blob, off, "early-booted");
 +		}
 +	}
++
++	videomode = env_get("videomode");
++	if (videomode)
++		karo_fixup_lcd_panel(blob, videomode);
 +
 +	return 0;
 +}
@@ -928,7 +951,7 @@ Index: u-boot/configs/txmp-1531_defconfig
 ===================================================================
 --- /dev/null
 +++ u-boot/configs/txmp-1531_defconfig
-@@ -0,0 +1,132 @@
+@@ -0,0 +1,134 @@
 +CONFIG_ARM=y
 +CONFIG_ARCH_STM32MP=y
 +CONFIG_SYS_MALLOC_F_LEN=0x3000
@@ -950,6 +973,8 @@ Index: u-boot/configs/txmp-1531_defconfig
 +CONFIG_LOGLEVEL=7
 +# CONFIG_CONSOLE_MUX is not set
 +CONFIG_VERSION_VARIABLE=y
++CONFIG_SPL_DISABLE_BANNER_PRINT=y
++# CONFIG_SPL_DISPLAY_PRINT is not set
 +CONFIG_SYS_MMCSD_RAW_MODE_U_BOOT_USE_PARTITION=y
 +CONFIG_SPL_ENV_SUPPORT=y
 +CONFIG_SPL_SAVEENV=y
@@ -959,6 +984,7 @@ Index: u-boot/configs/txmp-1531_defconfig
 +CONFIG_SYS_PROMPT="TXMP U-Boot > "
 +# CONFIG_CMD_ELF is not set
 +# CONFIG_CMD_XIMG is not set
++CONFIG_CMD_ENV_CALLBACK=y
 +CONFIG_CMD_MEMINFO=y
 +CONFIG_CMD_MEMTEST=y
 +CONFIG_CMD_ADC=y
@@ -1031,7 +1057,6 @@ Index: u-boot/configs/txmp-1531_defconfig
 +CONFIG_DM_REGULATOR_FIXED=y
 +CONFIG_DM_REGULATOR_STM32_VREFBUF=y
 +CONFIG_REMOTEPROC_STM32_COPRO=y
-+CONFIG_SERIAL_RX_BUFFER=y
 +CONFIG_DEBUG_UART_STM32=y
 +CONFIG_SPI=y
 +CONFIG_DM_SPI=y
@@ -1085,10 +1110,10 @@ Index: u-boot/board/karo/txmp/Kconfig
 +	  Enable support for the Ka-Ro electronics TXMP-1531 module featuring
 +	  an STM32MP153 SOC, up to 1GiB of SDRAM and 4GiB or 8GiB eMMC.
 +
-+config KARO_QSMP_157A
-+	bool "Ka-Ro QSMP-157C solder-in module"
++config KARO_QSMP_1570
++	bool "Ka-Ro QSMP-1570 solder-in module"
 +	help
-+	  Enable support for the Ka-Ro electronics QSMP-157C module featuring
++	  Enable support for the Ka-Ro electronics QSMP-1570 module featuring
 +	  an STM32MP157 SOC, 256MiB of SDRAM and 4GiB eMMC on a solder-in
 +	  .
 +
@@ -1142,7 +1167,7 @@ Index: u-boot/include/configs/txmp.h
 ===================================================================
 --- /dev/null
 +++ u-boot/include/configs/txmp.h
-@@ -0,0 +1,211 @@
+@@ -0,0 +1,225 @@
 +/* SPDX-License-Identifier: GPL-2.0+ OR BSD-3-Clause */
 +/*
 + * Copyright (C) 2018, STMicroelectronics - All Rights Reserved
@@ -1206,6 +1231,9 @@ Index: u-boot/include/configs/txmp.h
 +#define CONFIG_ENV_SIZE			SZ_4K
 +#endif
 +#define CONFIG_ENV_OVERWRITE
++#ifndef CONFIG_UBOOT_IGNORE_ENV
++#define CONFIG_ENV_CALLBACK_LIST_DEFAULT "baseboard:baseboard"
++#endif
 +
 +/* ATAGs */
 +#define CONFIG_CMDLINE_TAG
@@ -1277,9 +1305,9 @@ Index: u-boot/include/configs/txmp.h
 +#endif
 +
 +#define CONFIG_SYS_MMCSD_FS_BOOT_PARTITION	1
++#define BOOT_PART_STR		__stringify(CONFIG_SYS_MMCSD_FS_BOOT_PARTITION)
 +
 +#ifndef CONFIG_SPL_BUILD
-+
 +#ifdef CONFIG_TXMP_NOR
 +#define TXMP_NOR_MTDPARTS \
 +	"mtdparts_nor0=256k(fsbl1),1m(ssbl),256k(logo),256k(dtb),-(nor_user)\0"
@@ -1293,9 +1321,20 @@ Index: u-boot/include/configs/txmp.h
 +#else
 +#define TXMP_NAND_MTDPARTS		""
 +#endif
++#define VIDEOMODE_DEFAULT		"videomode=ETV570\0"
 +
-+#define ROOTPART_UUID_STR		"0cc66cc0-5458-384d-1610-726f6f746673"
 +#define FDT_ADDR_STR			"c4000000"
++
++#if defined(CONFIG_KARO_TXMP_1531)
++#define TXMP_BASEBOARD			"mb7"
++#define ROOTPART_UUID_STR		"0cc66cc0-5458-4d50-1531-726f6f746673"
++#elif defined(CONFIG_KARO_QSMP_1570)
++#define TXMP_BASEBOARD			"qsbase1"
++#define ROOTPART_UUID_STR		"0cc66cc0-5153-4d50-1570-726f6f746673"
++#else
++#define TXMP_BASEBOARD			""
++#define ROOTPART_UUID_STR		"0cc66cc0-5458-4d50-1531-726f6f746673"
++#endif
 +
 +#define CONFIG_PREBOOT
 +#undef CONFIG_BOOTCOMMAND
@@ -1316,7 +1355,7 @@ Index: u-boot/include/configs/txmp.h
 +#define CONFIG_EXTRA_ENV_SETTINGS					\
 +	"autoload=no\0"							\
 +	"autostart=no\0"						\
-+	"baseboard=mb7\0"						\
++	"baseboard=" TXMP_BASEBOARD "\0"				\
 +	"bootargs_mmc=run default_bootargs;setenv bootargs ${bootargs}"	\
 +	" root=PARTUUID=${rootpart_uuid} rootwait ${append_bootargs}\0"	\
 +	"bootargs_nfs=run default_bootargs;setenv bootargs ${bootargs}"	\
@@ -1337,8 +1376,7 @@ Index: u-boot/include/configs/txmp.h
 +	" console=ttySTM0,115200 ro debug panic=0\0"			\
 +	"dtbfile=" CONFIG_DEFAULT_DEVICE_TREE ".dtb\0"			\
 +	"emmc_boot_ack=1\0"						\
-+	"emmc_boot_part="						\
-+	__stringify(CONFIG_SYS_MMCSD_FS_BOOT_PARTITION) "\0"		\
++	"emmc_boot_part=" BOOT_PART_STR "\0"				\
 +	"fdtaddr=" FDT_ADDR_STR "\0"					\
 +	"fdt_addr_r=" FDT_ADDR_STR "\0"					\
 +	"fdt_high=ffffffff\0"						\
@@ -1348,6 +1386,7 @@ Index: u-boot/include/configs/txmp.h
 +	"ramdisk_addr_r=-\0"						\
 +	"rootpart_uuid=" ROOTPART_UUID_STR "\0"				\
 +	"usb_pgood_delay=2000\0"					\
++	VIDEOMODE_DEFAULT						\
 +	TXMP_NAND_MTDPARTS						\
 +	TXMP_NOR_MTDPARTS
 +#endif /* CONFIG_UBOOT_IGNORE_ENV */
@@ -1358,24 +1397,30 @@ Index: u-boot/board/karo/common/Kconfig
 ===================================================================
 --- /dev/null
 +++ u-boot/board/karo/common/Kconfig
-@@ -0,0 +1,6 @@
+@@ -0,0 +1,12 @@
 +config UBOOT_IGNORE_ENV
-+        bool
-+        help
-+          Ignore non-volatile environment settings and use default
-+          environment only but allow saving the environment to mass
++	bool
++	help
++	  Ignore non-volatile environment settings and use default
++	  environment only but allow saving the environment to mass
 +	  storage.
++
++config SYS_FDT_ADDR
++	hex "FDT load address"
++	default 0xc4000000
++	help
++	  The address the FDT file should be loaded to.
 Index: u-boot/board/karo/common/Makefile
 ===================================================================
 --- /dev/null
 +++ u-boot/board/karo/common/Makefile
 @@ -0,0 +1 @@
-+obj-y += env.o
++obj-y += env.o fdt.o
 Index: u-boot/board/karo/common/env.c
 ===================================================================
 --- /dev/null
 +++ u-boot/board/karo/common/env.c
-@@ -0,0 +1,51 @@
+@@ -0,0 +1,144 @@
 +// SPDX-License-Identifier: GPL-2.0
 +/*
 + * (C) Copyright 2019 Lothar Waßmann <LW@KARO-electronics.de>
@@ -1396,6 +1441,7 @@ Index: u-boot/board/karo/common/env.c
 +
 +#include <common.h>
 +#include <environment.h>
++#include <malloc.h>
 +#include "karo.h"
 +
 +DECLARE_GLOBAL_DATA_PTR;
@@ -1425,32 +1471,113 @@ Index: u-boot/board/karo/common/env.c
 +		debug("Clearing '%s'\n", cleanup_vars[i]);
 +		env_set(cleanup_vars[i], NULL);
 +	}
++#ifdef CONFIG_ENV_CALLBACK_LIST_DEFAULT
++	if (!env_get(ENV_CALLBACK_VAR))
++		env_set(ENV_CALLBACK_VAR, CONFIG_ENV_CALLBACK_LIST_DEFAULT);
++#endif
 +}
 +#endif
++
++/*
++ * Callback function to insert/remove the 'baseboard' name into/from
++ * the 'dtbfile' variable whenever the 'baseboard' variable is changed.
++ */
++static int karo_env_baseboard(const char *name, const char *value,
++			      enum env_op op, int flags)
++{
++	const char *dtbfile;
++	char *dlm;
++	int len;
++	char *new_dtbfile;
++	size_t alloc_len;
++	const char *ext = ".dtb";
++	size_t ext_len = strlen(ext);
++
++	if (!(flags & H_INTERACTIVE))
++		return 0;
++
++	dtbfile = env_get("dtbfile");
++	if (!dtbfile)
++		return 0;
++
++	if (strcmp(dtbfile + strlen(dtbfile) - ext_len, ext) != 0)
++		ext_len = 0;
++
++	/*
++	 * Skip over the first two dashes in dtbfile name:
++	 * "<soc>-<module>-<version>[-<baseboard>][.dtb]"
++	 *                           ^
++	 * If the dtbfile name does not match the above
++	 * pattern it won't be changed.
++	 */
++	dlm = strchr(dtbfile, '-');
++	if (!dlm)
++		return 0;
++	dlm = strchr(dlm + 1, '-');
++	if (!dlm)
++		return 0;
++	dlm = strchr(dlm + 1, '-');
++	if (dlm)
++		len = dlm - dtbfile;
++	else
++		len = strlen(dtbfile) - ext_len;
++
++	if (op == env_op_delete) {
++		char *olddtb;
++
++		if (!dlm)
++			return 0;
++
++		olddtb = strdup(dtbfile);
++		if (ext_len)
++			strcpy(dlm, ext);
++		else
++			*dlm = '\0';
++
++		pr_notice("Notice: 'dtbfile' changed from '%s' to '%s'\n",
++			  olddtb, dtbfile);
++		env_set("dtbfile", dtbfile);
++		free(olddtb);
++		return 0;
++	}
++
++	alloc_len = len + strlen(value) + ext_len + 2;
++	new_dtbfile = malloc(alloc_len);
++	if (!new_dtbfile)
++		return 0;
++
++	strncpy(new_dtbfile, dtbfile, len);
++	new_dtbfile[len] = '-';
++	/* append new 'baseboard' value */
++	strncpy(new_dtbfile + len + 1, value, strlen(value));
++	if (ext_len)
++		strcpy(new_dtbfile + alloc_len - 1 - ext_len, ext);
++	else
++		new_dtbfile[alloc_len - 1 - ext_len] = '\0';
++
++	if (strcmp(dtbfile, new_dtbfile) != 0) {
++		printf("Notice: 'dtbfile' changed from '%s' to '%s'\n",
++		       dtbfile, new_dtbfile);
++		env_set("dtbfile", new_dtbfile);
++	}
++	free(new_dtbfile);
++	return 0;
++}
++
++U_BOOT_ENV_CALLBACK(baseboard, karo_env_baseboard);
 Index: u-boot/board/karo/common/karo.h
 ===================================================================
 --- /dev/null
 +++ u-boot/board/karo/common/karo.h
-@@ -0,0 +1,19 @@
+@@ -0,0 +1,8 @@
 +/* SPDX-License-Identifier: GPL-2.0
 + *
-+ * (C) Copyright 2012 Lothar Waßmann <LW@KARO-electronics.de>
-+ *
-+ * See file CREDITS for list of people who contributed to this
-+ * project.
-+ *
-+ * This program is free software; you can redistribute it and/or
-+ * modify it under the terms of the GNU General Public License
-+ * version 2 as published by the Free Software Foundation.
-+ *
-+ * This program is distributed in the hope that it will be useful,
-+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
-+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-+ * GNU General Public License for more details.
++ * (C) Copyright 2019 Lothar Waßmann <LW@KARO-electronics.de>
 + *
 + */
 +
 +void env_cleanup(void);
++void karo_fixup_lcd_panel(void *blob, const char *videomode);
 Index: u-boot/board/karo/txmp/config.mk
 ===================================================================
 --- /dev/null
@@ -1756,6 +1883,7 @@ Index: u-boot/configs/txmp-1531_mfg_defconfig
 +CONFIG_SYS_PROMPT="TXMP U-Boot > "
 +# CONFIG_CMD_ELF is not set
 +# CONFIG_CMD_XIMG is not set
++CONFIG_CMD_ENV_CALLBACK=y
 +CONFIG_CMD_MEMINFO=y
 +CONFIG_CMD_MEMTEST=y
 +CONFIG_CMD_ADC=y
@@ -1824,7 +1952,6 @@ Index: u-boot/configs/txmp-1531_mfg_defconfig
 +CONFIG_DM_REGULATOR_FIXED=y
 +CONFIG_DM_REGULATOR_STM32_VREFBUF=y
 +CONFIG_REMOTEPROC_STM32_COPRO=y
-+CONFIG_SERIAL_RX_BUFFER=y
 +CONFIG_DEBUG_UART_STM32=y
 +CONFIG_SPI=y
 +CONFIG_DM_SPI=y
@@ -1881,6 +2008,7 @@ Index: u-boot/configs/txmp-1531_noenv_defconfig
 +CONFIG_SYS_PROMPT="TXMP U-Boot > "
 +# CONFIG_CMD_ELF is not set
 +# CONFIG_CMD_XIMG is not set
++CONFIG_CMD_ENV_CALLBACK=y
 +CONFIG_CMD_MEMINFO=y
 +CONFIG_CMD_MEMTEST=y
 +CONFIG_CMD_ADC=y
@@ -1953,7 +2081,6 @@ Index: u-boot/configs/txmp-1531_noenv_defconfig
 +CONFIG_DM_REGULATOR_STM32_VREFBUF=y
 +CONFIG_STM32MP1_DDR_INTERACTIVE=y
 +CONFIG_REMOTEPROC_STM32_COPRO=y
-+CONFIG_SERIAL_RX_BUFFER=y
 +CONFIG_DEBUG_UART_STM32=y
 +CONFIG_SPI=y
 +CONFIG_DM_SPI=y
@@ -1975,10 +2102,10 @@ Index: u-boot/configs/txmp-1531_noenv_defconfig
 +# CONFIG_REGEX is not set
 +CONFIG_FDT_FIXUP_PARTITIONS=y
 +# CONFIG_EFI_LOADER is not set
-Index: u-boot/configs/txmp-1531_sec_defconfig
+Index: u-boot/configs/txmp-1531_trusted_defconfig
 ===================================================================
 --- /dev/null
-+++ u-boot/configs/txmp-1531_sec_defconfig
++++ u-boot/configs/txmp-1531_trusted_defconfig
 @@ -0,0 +1,118 @@
 +CONFIG_ARM=y
 +CONFIG_ARCH_STM32MP=y
@@ -1998,6 +2125,7 @@ Index: u-boot/configs/txmp-1531_sec_defconfig
 +CONFIG_SYS_PROMPT="TXMP U-Boot > "
 +# CONFIG_CMD_ELF is not set
 +# CONFIG_CMD_XIMG is not set
++CONFIG_CMD_ENV_CALLBACK=y
 +CONFIG_CMD_MEMINFO=y
 +CONFIG_CMD_MEMTEST=y
 +CONFIG_CMD_ADC=y
@@ -2068,7 +2196,6 @@ Index: u-boot/configs/txmp-1531_sec_defconfig
 +CONFIG_DM_REGULATOR_FIXED=y
 +CONFIG_DM_REGULATOR_STM32_VREFBUF=y
 +CONFIG_REMOTEPROC_STM32_COPRO=y
-+CONFIG_SERIAL_RX_BUFFER=y
 +CONFIG_DEBUG_UART_STM32=y
 +CONFIG_SPI=y
 +CONFIG_DM_SPI=y
@@ -2219,7 +2346,7 @@ Index: u-boot/arch/arm/dts/stm32mp153a-txmp-1531.dts
 ===================================================================
 --- /dev/null
 +++ u-boot/arch/arm/dts/stm32mp153a-txmp-1531.dts
-@@ -0,0 +1,981 @@
+@@ -0,0 +1,944 @@
 +// SPDX-License-Identifier: (GPL-2.0+ OR BSD-3-Clause)
 +/*
 + * Copyright (C) STMicroelectronics 2019 - All Rights Reserved
@@ -2289,11 +2416,7 @@ Index: u-boot/arch/arm/dts/stm32mp153a-txmp-1531.dts
 +
 +		port {
 +			panel_in: endpoint {
-+#if 1
 +				remote-endpoint = <&ltdc_ep1_out>;
-+#else
-+				remote-endpoint = <&panel_out>;
-+#endif
 +			};
 +		};
 +
@@ -2480,15 +2603,15 @@ Index: u-boot/arch/arm/dts/stm32mp153a-txmp-1531.dts
 +	vdd-supply = <&reg_3v3>;
 +	vdda-supply = <&reg_3v3>;
 +	vref-supply = <&vrefbuf>;
-+	status = "okay";
++	status = "disabled";
 +};
 +
 +&adc2 {
-+	status = "okay";
++	status = "disabled";
 +};
 +
 +&adc_temp {
-+	status = "okay";
++	status = "disabled";
 +};
 +
 +&bsec {
@@ -2498,28 +2621,6 @@ Index: u-boot/arch/arm/dts/stm32mp153a-txmp-1531.dts
 +
 +&dsi {
 +	status = "disabled";
-+#if 0
-+	ports {
-+		#address-cells = <1>;
-+		#size-cells = <0>;
-+
-+		port@0 {
-+			reg = <0>;
-+
-+			dsi_in: endpoint {
-+				remote-endpoint = <&ltdc_ep1_out>;
-+			};
-+		};
-+
-+		port@1 {
-+			reg = <1>;
-+
-+			dsi_out: endpoint {
-+				remote-endpoint = <&panel_in>;
-+			};
-+		};
-+	};
-+#endif
 +};
 +
 +&ethernet0 {
@@ -2559,19 +2660,12 @@ Index: u-boot/arch/arm/dts/stm32mp153a-txmp-1531.dts
 +
 +&ltdc {
 +	status = "okay";
-+#if 1
++
 +	port {
 +		ltdc_ep1_out: endpoint {
 +			remote-endpoint = <&panel_in>;
 +		};
 +	};
-+#else
-+	port {
-+		ltdc_ep1_out: endpoint {
-+			remote-endpoint = <&dsi_in>;
-+		};
-+	};
-+#endif
 +};
 +
 +&m_can2 {
@@ -2730,11 +2824,7 @@ Index: u-boot/arch/arm/dts/stm32mp153a-txmp-1531.dts
 +	pinctrl-2 = <&sdmmc3_sleep_pins_mx>;
 +	cd-gpios = <&gpioc 11 GPIO_ACTIVE_LOW>;
 +	bus-width = <4>;
-+#if 1
 +	st,neg-edge;
-+//	st,sig-dir;
-+//	st,use-ckin;
-+#endif
 +	status = "okay";
 +};
 +
@@ -2793,7 +2883,7 @@ Index: u-boot/arch/arm/dts/stm32mp153a-txmp-1531.dts
 +&vrefbuf {
 +	regulator-min-microvolt = <2500000>;
 +	regulator-max-microvolt = <2500000>;
-+	status = "okay";
++	status = "disabled";
 +};
 +
 +&pinctrl {
@@ -3136,7 +3226,7 @@ Index: u-boot/arch/arm/dts/stm32mp153a-txmp-1531.dts
 +				  STM32_PINMUX('B', 10, AF14) /* LCD_G4 */
 +				  STM32_PINMUX('F', 11, AF14) /* LCD_G5 */
 +				  STM32_PINMUX('C',  7, AF14) /* LCD_G6 */
-+				  STM32_PINMUX('G',  8, AF14) /* LCD_G7 */
++				  //STM32_PINMUX('G',  8, AF14) /* LCD_G7 */
 +				  //STM32_PINMUX('D',  9, AF14) /* LCD_B0 */
 +				  //STM32_PINMUX('G', 12, AF14) /* LCD_B1 */
 +				  STM32_PINMUX('G', 10, AF14) /* LCD_B2 */
@@ -3213,7 +3303,7 @@ Index: u-boot/arch/arm/mach-stm32mp/Kconfig
 +	bool "Support Ka-Ro TXMP modules"
 +	select SOC_STM32MP1
 +	help
-+		Ka-Ro electronics TXMP-1531/QSMP-157C board support
++		Ka-Ro electronics TXMP-1531/QSMP-1570 board support
 +
  config STM32MP1_RESET_HALT_WORKAROUND
  	bool "workaround for reset halt debug on stm32mp15x"
@@ -3225,18 +3315,18 @@ Index: u-boot/arch/arm/mach-stm32mp/Kconfig
 +source "board/karo/txmp/Kconfig"
  
  endif
-Index: u-boot/configs/qsmp-157c_defconfig
+Index: u-boot/configs/qsmp-1570_defconfig
 ===================================================================
 --- /dev/null
-+++ u-boot/configs/qsmp-157c_defconfig
-@@ -0,0 +1,134 @@
++++ u-boot/configs/qsmp-1570_defconfig
+@@ -0,0 +1,136 @@
 +CONFIG_ARM=y
 +CONFIG_ARCH_STM32MP=y
 +CONFIG_SYS_MALLOC_F_LEN=0x3000
 +CONFIG_SPL_MMC_SUPPORT=y
 +CONFIG_SPL=y
 +CONFIG_TARGET_KARO_TXMP=y
-+CONFIG_KARO_QSMP_157A=y
++CONFIG_KARO_QSMP_1570=y
 +CONFIG_TXMP_SPI=y
 +CONFIG_SPL_FAT_SUPPORT=y
 +CONFIG_SPL_SPI_FLASH_SUPPORT=y
@@ -3251,6 +3341,8 @@ Index: u-boot/configs/qsmp-157c_defconfig
 +CONFIG_LOGLEVEL=7
 +# CONFIG_CONSOLE_MUX is not set
 +CONFIG_VERSION_VARIABLE=y
++CONFIG_SPL_DISABLE_BANNER_PRINT=y
++# CONFIG_SPL_DISPLAY_PRINT is not set
 +CONFIG_SYS_MMCSD_RAW_MODE_U_BOOT_USE_PARTITION=y
 +CONFIG_SPL_ENV_SUPPORT=y
 +CONFIG_SPL_SAVEENV=y
@@ -3260,6 +3352,7 @@ Index: u-boot/configs/qsmp-157c_defconfig
 +CONFIG_SYS_PROMPT="QSMP U-Boot > "
 +# CONFIG_CMD_ELF is not set
 +# CONFIG_CMD_XIMG is not set
++CONFIG_CMD_ENV_CALLBACK=y
 +CONFIG_CMD_MEMINFO=y
 +CONFIG_CMD_MEMTEST=y
 +CONFIG_CMD_ADC=y
@@ -3291,7 +3384,7 @@ Index: u-boot/configs/qsmp-157c_defconfig
 +# CONFIG_SPL_DOS_PARTITION is not set
 +# CONFIG_ISO_PARTITION is not set
 +CONFIG_PARTITION_TYPE_GUID=y
-+CONFIG_DEFAULT_DEVICE_TREE="stm32mp157c-qsmp-157c"
++CONFIG_DEFAULT_DEVICE_TREE="stm32mp157c-qsmp-1570"
 +CONFIG_ENV_IS_IN_MMC=y
 +CONFIG_STM32_ADC=y
 +CONFIG_USB_FUNCTION_FASTBOOT=y
@@ -3334,7 +3427,6 @@ Index: u-boot/configs/qsmp-157c_defconfig
 +CONFIG_DM_REGULATOR_FIXED=y
 +CONFIG_DM_REGULATOR_STM32_VREFBUF=y
 +CONFIG_REMOTEPROC_STM32_COPRO=y
-+CONFIG_SERIAL_RX_BUFFER=y
 +CONFIG_DEBUG_UART_STM32=y
 +CONFIG_SPI=y
 +CONFIG_DM_SPI=y
@@ -3364,16 +3456,16 @@ Index: u-boot/configs/qsmp-157c_defconfig
 +# CONFIG_REGEX is not set
 +CONFIG_FDT_FIXUP_PARTITIONS=y
 +# CONFIG_EFI_LOADER is not set
-Index: u-boot/configs/qsmp-157c_mfg_defconfig
+Index: u-boot/configs/qsmp-1570_mfg_defconfig
 ===================================================================
 --- /dev/null
-+++ u-boot/configs/qsmp-157c_mfg_defconfig
++++ u-boot/configs/qsmp-1570_mfg_defconfig
 @@ -0,0 +1,109 @@
 +CONFIG_ARM=y
 +CONFIG_ARCH_STM32MP=y
 +CONFIG_SYS_MALLOC_F_LEN=0x3000
 +CONFIG_TARGET_KARO_TXMP=y
-+CONFIG_KARO_QSMP_157A=y
++CONFIG_KARO_QSMP_1570=y
 +CONFIG_TXMP_SPI=y
 +CONFIG_KARO_UBOOT_MFG=y
 +CONFIG_DEBUG_UART=y
@@ -3387,6 +3479,7 @@ Index: u-boot/configs/qsmp-157c_mfg_defconfig
 +CONFIG_SYS_PROMPT="QSMP U-Boot > "
 +# CONFIG_CMD_ELF is not set
 +# CONFIG_CMD_XIMG is not set
++CONFIG_CMD_ENV_CALLBACK=y
 +CONFIG_CMD_MEMINFO=y
 +CONFIG_CMD_MEMTEST=y
 +CONFIG_CMD_ADC=y
@@ -3414,7 +3507,7 @@ Index: u-boot/configs/qsmp-157c_mfg_defconfig
 +CONFIG_CMD_MTDPARTS=y
 +CONFIG_CMD_UBI=y
 +# CONFIG_ISO_PARTITION is not set
-+CONFIG_DEFAULT_DEVICE_TREE="stm32mp157c-qsmp-157c"
++CONFIG_DEFAULT_DEVICE_TREE="stm32mp157c-qsmp-1570"
 +CONFIG_ENV_IS_IN_MMC=y
 +CONFIG_STM32_ADC=y
 +CONFIG_USB_FUNCTION_FASTBOOT=y
@@ -3456,7 +3549,6 @@ Index: u-boot/configs/qsmp-157c_mfg_defconfig
 +CONFIG_DM_REGULATOR_FIXED=y
 +CONFIG_DM_REGULATOR_STM32_VREFBUF=y
 +CONFIG_REMOTEPROC_STM32_COPRO=y
-+CONFIG_SERIAL_RX_BUFFER=y
 +CONFIG_DEBUG_UART_STM32=y
 +CONFIG_SPI=y
 +CONFIG_DM_SPI=y
@@ -3478,10 +3570,10 @@ Index: u-boot/configs/qsmp-157c_mfg_defconfig
 +# CONFIG_REGEX is not set
 +CONFIG_FDT_FIXUP_PARTITIONS=y
 +# CONFIG_EFI_LOADER is not set
-Index: u-boot/configs/qsmp-157c_noenv_defconfig
+Index: u-boot/configs/qsmp-1570_noenv_defconfig
 ===================================================================
 --- /dev/null
-+++ u-boot/configs/qsmp-157c_noenv_defconfig
++++ u-boot/configs/qsmp-1570_noenv_defconfig
 @@ -0,0 +1,126 @@
 +CONFIG_ARM=y
 +CONFIG_ARCH_STM32MP=y
@@ -3489,7 +3581,7 @@ Index: u-boot/configs/qsmp-157c_noenv_defconfig
 +CONFIG_SPL_MMC_SUPPORT=y
 +CONFIG_SPL=y
 +CONFIG_TARGET_KARO_TXMP=y
-+CONFIG_KARO_QSMP_157A=y
++CONFIG_KARO_QSMP_1570=y
 +CONFIG_TXMP_SPI=y
 +CONFIG_KARO_UBOOT_NOENV=y
 +CONFIG_SPL_FAT_SUPPORT=y
@@ -3513,6 +3605,7 @@ Index: u-boot/configs/qsmp-157c_noenv_defconfig
 +CONFIG_SYS_PROMPT="QSMP U-Boot > "
 +# CONFIG_CMD_ELF is not set
 +# CONFIG_CMD_XIMG is not set
++CONFIG_CMD_ENV_CALLBACK=y
 +CONFIG_CMD_MEMINFO=y
 +CONFIG_CMD_MEMTEST=y
 +CONFIG_CMD_ADC=y
@@ -3543,7 +3636,7 @@ Index: u-boot/configs/qsmp-157c_noenv_defconfig
 +# CONFIG_SPL_DOS_PARTITION is not set
 +# CONFIG_ISO_PARTITION is not set
 +CONFIG_PARTITION_TYPE_GUID=y
-+CONFIG_DEFAULT_DEVICE_TREE="stm32mp157c-qsmp-157c"
++CONFIG_DEFAULT_DEVICE_TREE="stm32mp157c-qsmp-1570"
 +CONFIG_ENV_IS_IN_MMC=y
 +CONFIG_STM32_ADC=y
 +CONFIG_USB_FUNCTION_FASTBOOT=y
@@ -3587,7 +3680,6 @@ Index: u-boot/configs/qsmp-157c_noenv_defconfig
 +CONFIG_DM_REGULATOR_STM32_VREFBUF=y
 +CONFIG_STM32MP1_DDR_INTERACTIVE=y
 +CONFIG_REMOTEPROC_STM32_COPRO=y
-+CONFIG_SERIAL_RX_BUFFER=y
 +CONFIG_DEBUG_UART_STM32=y
 +CONFIG_SPI=y
 +CONFIG_DM_SPI=y
@@ -3609,16 +3701,16 @@ Index: u-boot/configs/qsmp-157c_noenv_defconfig
 +# CONFIG_REGEX is not set
 +CONFIG_FDT_FIXUP_PARTITIONS=y
 +# CONFIG_EFI_LOADER is not set
-Index: u-boot/configs/qsmp-157c_sec_defconfig
+Index: u-boot/configs/qsmp-1570_trusted_defconfig
 ===================================================================
 --- /dev/null
-+++ u-boot/configs/qsmp-157c_sec_defconfig
++++ u-boot/configs/qsmp-1570_trusted_defconfig
 @@ -0,0 +1,120 @@
 +CONFIG_ARM=y
 +CONFIG_ARCH_STM32MP=y
 +CONFIG_SYS_MALLOC_F_LEN=0x3000
 +CONFIG_TARGET_KARO_TXMP=y
-+CONFIG_KARO_QSMP_157A=y
++CONFIG_KARO_QSMP_1570=y
 +CONFIG_TXMP_SPI=y
 +CONFIG_DEBUG_UART=y
 +CONFIG_DISTRO_DEFAULTS=y
@@ -3632,6 +3724,7 @@ Index: u-boot/configs/qsmp-157c_sec_defconfig
 +CONFIG_SYS_PROMPT="QSMP U-Boot > "
 +# CONFIG_CMD_ELF is not set
 +# CONFIG_CMD_XIMG is not set
++CONFIG_CMD_ENV_CALLBACK=y
 +CONFIG_CMD_MEMINFO=y
 +CONFIG_CMD_MEMTEST=y
 +CONFIG_CMD_ADC=y
@@ -3662,7 +3755,7 @@ Index: u-boot/configs/qsmp-157c_sec_defconfig
 +CONFIG_CMD_UBI=y
 +# CONFIG_ISO_PARTITION is not set
 +CONFIG_PARTITION_TYPE_GUID=y
-+CONFIG_DEFAULT_DEVICE_TREE="stm32mp157c-qsmp-157c"
++CONFIG_DEFAULT_DEVICE_TREE="stm32mp157c-qsmp-1570"
 +CONFIG_ENV_IS_IN_MMC=y
 +CONFIG_STM32_ADC=y
 +CONFIG_USB_FUNCTION_FASTBOOT=y
@@ -3704,7 +3797,6 @@ Index: u-boot/configs/qsmp-157c_sec_defconfig
 +CONFIG_DM_REGULATOR_FIXED=y
 +CONFIG_DM_REGULATOR_STM32_VREFBUF=y
 +CONFIG_REMOTEPROC_STM32_COPRO=y
-+CONFIG_SERIAL_RX_BUFFER=y
 +CONFIG_DEBUG_UART_STM32=y
 +CONFIG_SPI=y
 +CONFIG_DM_SPI=y
@@ -3734,10 +3826,10 @@ Index: u-boot/configs/qsmp-157c_sec_defconfig
 +# CONFIG_REGEX is not set
 +CONFIG_FDT_FIXUP_PARTITIONS=y
 +# CONFIG_EFI_LOADER is not set
-Index: u-boot/arch/arm/dts/stm32mp157c-qsmp-157c-u-boot.dtsi
+Index: u-boot/arch/arm/dts/stm32mp157c-qsmp-1570-u-boot.dtsi
 ===================================================================
 --- /dev/null
-+++ u-boot/arch/arm/dts/stm32mp157c-qsmp-157c-u-boot.dtsi
++++ u-boot/arch/arm/dts/stm32mp157c-qsmp-1570-u-boot.dtsi
 @@ -0,0 +1,112 @@
 +// SPDX-License-Identifier: GPL-2.0 OR BSD-3-Clause
 +/*
@@ -3851,11 +3943,11 @@ Index: u-boot/arch/arm/dts/stm32mp157c-qsmp-157c-u-boot.dtsi
 +		bias-pull-up;
 +	};
 +};
-Index: u-boot/arch/arm/dts/stm32mp157c-qsmp-157c.dts
+Index: u-boot/arch/arm/dts/stm32mp157c-qsmp-1570.dts
 ===================================================================
 --- /dev/null
-+++ u-boot/arch/arm/dts/stm32mp157c-qsmp-157c.dts
-@@ -0,0 +1,1024 @@
++++ u-boot/arch/arm/dts/stm32mp157c-qsmp-1570.dts
+@@ -0,0 +1,983 @@
 +// SPDX-License-Identifier: (GPL-2.0+ OR BSD-3-Clause)
 +/*
 + * Copyright (C) STMicroelectronics 2019 - All Rights Reserved
@@ -3874,8 +3966,8 @@ Index: u-boot/arch/arm/dts/stm32mp157c-qsmp-157c.dts
 +#include "stm32mp15-ddr.dtsi"
 +
 +/ {
-+	model = "Ka-Ro electronics GmbH QSMP-157C solder-in module";
-+	compatible = "st,stm32mp157c-qsmp-157c", "st,stm32mp157";
++	model = "Ka-Ro electronics GmbH QSMP-1570 solder-in module";
++	compatible = "st,stm32mp157c-qsmp-1570", "st,stm32mp157";
 +
 +	aliases {
 +		display = &lcd_panel;
@@ -3920,22 +4012,19 @@ Index: u-boot/arch/arm/dts/stm32mp157c-qsmp-157c.dts
 +		pinctrl-1 = <&qsmp_ltdc_pins_sleep>;
 +		enable-gpios = <&gpioa 10 GPIO_ACTIVE_HIGH>;
 +		backlight = <&lcd_backlight>;
++		power-supply = <&reg_3v3>;
 +		status = "okay";
 +
 +		port {
 +			panel_in: endpoint {
-+#if 1
 +				remote-endpoint = <&ltdc_ep1_out>;
-+#else
-+				remote-endpoint = <&panel_out>;
-+#endif
 +			};
 +		};
 +
 +		display-timings {
-+			native-mode = <&ETV570>;
++			native-mode = <&ET0700>;
 +
-+			VGA {
++			VGA: VGA {
 +				clock-frequency = <25200000>;
 +				hactive = <640>;
 +				vactive = <480>;
@@ -3968,7 +4057,7 @@ Index: u-boot/arch/arm/dts/stm32mp157c-qsmp-157c.dts
 +				pixelclk-active = <0>;
 +			};
 +
-+			ET0350 {
++			ET0350: ET0350 {
 +				u-boot,panel-name = "edt,et0350g0dh6";
 +				clock-frequency = <6413760>;
 +				hactive = <320>;
@@ -3985,7 +4074,7 @@ Index: u-boot/arch/arm/dts/stm32mp157c-qsmp-157c.dts
 +				pixelclk-active = <0>;
 +			};
 +
-+			ET0430 {
++			ET0430: ET0430 {
 +				u-boot,panel-name = "edt,et0430g0dh6";
 +				clock-frequency = <9009000>;
 +				hactive = <480>;
@@ -4002,7 +4091,7 @@ Index: u-boot/arch/arm/dts/stm32mp157c-qsmp-157c.dts
 +				pixelclk-active = <1>;
 +			};
 +
-+			ET0500 {
++			ET0500: ET0500 {
 +				clock-frequency = <33264000>;
 +				hactive = <800>;
 +				vactive = <480>;
@@ -4018,7 +4107,7 @@ Index: u-boot/arch/arm/dts/stm32mp157c-qsmp-157c.dts
 +				pixelclk-active = <0>;
 +			};
 +
-+			ET0700 { /* same as ET0500 */
++			ET0700: ET0700 { /* same as ET0500 */
 +				u-boot,panel-name = "edt,etm0700g0dh6";
 +				clock-frequency = <33264000>;
 +				hactive = <800>;
@@ -4035,7 +4124,7 @@ Index: u-boot/arch/arm/dts/stm32mp157c-qsmp-157c.dts
 +				pixelclk-active = <0>;
 +			};
 +
-+			ETQ570 {
++			ETQ570: ETQ570 {
 +				clock-frequency = <6596040>;
 +				hactive = <320>;
 +				vactive = <240>;
@@ -4113,20 +4202,19 @@ Index: u-boot/arch/arm/dts/stm32mp157c-qsmp-157c.dts
 +};
 +
 +&adc {
-+//	vdd-supply = <&reg_3v3>;
 +	vdd-microvolts = <3300000>;
 +	vss-microvolts = <0>;
 +	vdda-supply = <&reg_3v3>;
 +	vref-supply = <&vrefbuf>;
-+	status = "okay";
++	status = "disabled";
 +};
 +
 +&adc2 {
-+	status = "okay";
++	status = "disabled";
 +};
 +
 +&adc_temp {
-+	status = "okay";
++	status = "disabled";
 +};
 +
 +&bsec {
@@ -4136,28 +4224,6 @@ Index: u-boot/arch/arm/dts/stm32mp157c-qsmp-157c.dts
 +
 +&dsi {
 +	status = "disabled";
-+#if 0
-+	ports {
-+		#address-cells = <1>;
-+		#size-cells = <0>;
-+
-+		port@0 {
-+			reg = <0>;
-+
-+			dsi_in: endpoint {
-+				remote-endpoint = <&ltdc_ep1_out>;
-+			};
-+		};
-+
-+		port@1 {
-+			reg = <1>;
-+
-+			dsi_out: endpoint {
-+				remote-endpoint = <&panel_in>;
-+			};
-+		};
-+	};
-+#endif
 +};
 +
 +&ethernet0 {
@@ -4168,7 +4234,7 @@ Index: u-boot/arch/arm/dts/stm32mp157c-qsmp-157c.dts
 +	phy-handle = <&phy0>;
 +	phy-reset-gpios = <&gpioa 4 GPIO_ACTIVE_LOW>;
 +	phy-reset-duration-us = <10000>;
-+	phy-reset-post-delay-us = <100000>;
++	phy-reset-post-delay-us = <100>;
 +	clock-names = "stmmaceth", "mac-clk-tx", "mac-clk-rx",
 +		      "ethstp", "syscfg-clk", "eth-ck";
 +	clocks = <&rcc ETHMAC &rcc ETHTX &rcc ETHRX
@@ -4184,23 +4250,18 @@ Index: u-boot/arch/arm/dts/stm32mp157c-qsmp-157c.dts
 +			reg = <3>;
 +			interrupt-parent = <&gpioa>;
 +			interrupts = <9 IRQ_TYPE_EDGE_FALLING>;
-+
-+			rxd0-skew-ps = <6>;
-+			rxd1-skew-ps = <5>;
-+#if 0
-+			rxd2-skew-ps = <(-1)>;
-+			rxd3-skew-ps = <(-22)>;
-+			rxdv-skew-ps = <(-12)>;
-+			rxc-skew-ps = <0>;
-+#endif
-+#if 0
-+			txd0-skew-ps = <(-103)>;
-+			txd1-skew-ps = <(-104)>;
-+			txd2-skew-ps = <(-73)>;
-+			txd3-skew-ps = <(-25)>;
-+			txen-skew-ps = <15>;
-+#endif
-+			txc-skew-ps = <1000>;
++			rxd0-skew-ps = <(420 + 6)>;
++			rxd1-skew-ps = <(420 + 5)>;
++			rxd2-skew-ps = <(420 - 1)>;
++			rxd3-skew-ps = <(420 - 22)>;
++			txd0-skew-ps = <(420 - 103)>;
++			txd1-skew-ps = <(420 - 104)>;
++			txd2-skew-ps = <(420 - 73)>;
++			txd3-skew-ps = <(420 - 25)>;
++			rxdv-skew-ps = <(420 - 12)>;
++			txen-skew-ps = <(420 + 15)>;
++			rxc-skew-ps = <(900 - 0)>;
++			txc-skew-ps = <(900 + 1000)>;
 +		};
 +	};
 +};
@@ -4212,19 +4273,12 @@ Index: u-boot/arch/arm/dts/stm32mp157c-qsmp-157c.dts
 +
 +&ltdc {
 +	status = "okay";
-+#if 1
++
 +	port {
 +		ltdc_ep1_out: endpoint {
 +			remote-endpoint = <&panel_in>;
 +		};
 +	};
-+#else
-+	port {
-+		ltdc_ep1_out: endpoint {
-+			remote-endpoint = <&dsi_in>;
-+		};
-+	};
-+#endif
 +};
 +
 +&m_can1 {
@@ -4377,10 +4431,6 @@ Index: u-boot/arch/arm/dts/stm32mp157c-qsmp-157c.dts
 +	bus-width = <4>;
 +	cd-gpios = <&gpiob 7 GPIO_ACTIVE_LOW>;
 +	st,neg-edge;
-+#if 0
-+//	st,sig-dir;
-+	st,use-ckin;
-+#endif
 +	status = "okay";
 +};
 +
@@ -4447,7 +4497,7 @@ Index: u-boot/arch/arm/dts/stm32mp157c-qsmp-157c.dts
 +&vrefbuf {
 +	regulator-min-microvolt = <2500000>;
 +	regulator-max-microvolt = <2500000>;
-+	status = "okay";
++	status = "disabled";
 +};
 +
 +&pinctrl {
@@ -4479,20 +4529,21 @@ Index: u-boot/arch/arm/dts/stm32mp157c-qsmp-157c.dts
 +		pins3 {
 +			/* Micrel KSZ92031 strap pins */
 +			pinmux = <
-+				  STM32_PINMUX('A', 7, AF11) /* ETH_RGMII_RX_CTL */
-+				  STM32_PINMUX('C', 4, AF11) /* ETH_RGMII_RXD0 */
-+				  STM32_PINMUX('C', 5, AF11) /* ETH_RGMII_RXD1 */
-+				  STM32_PINMUX('B', 0, AF11) /* ETH_RGMII_RXD2 */
-+				  STM32_PINMUX('H', 7, AF11) /* ETH_RGMII_RXD3 */
++				  STM32_PINMUX('A', 7, AF11) /* RX_CTL | CLK125_EN */
++				  STM32_PINMUX('C', 4, AF11) /* RXD0 | MODE0 */
++				  STM32_PINMUX('C', 5, AF11) /* RXD1 | MODE1 */
++				  STM32_PINMUX('B', 0, AF11) /* RXD2 | MODE2 */
++				  STM32_PINMUX('H', 7, AF11) /* RXD3 | MODE3 */
 +			>;
 +			bias-pull-up;
 +		};
 +
 +		pins4 {
 +			pinmux = <
-+				  STM32_PINMUX('G', 5, AF11) /* ETH_RGMII_CLK125 */
-+				  STM32_PINMUX('A', 1, AF11) /* ETH_RGMII_RX_CLK */
++				  STM32_PINMUX('G', 5, AF11) /* CLK125 | LED_MODE */
++				  STM32_PINMUX('A', 1, AF11) /* RX_CLK | PHYAD2 */
 +			>;
++			bias-pull-down;
 +		};
 +	};
 +
@@ -4816,7 +4867,7 @@ Index: u-boot/arch/arm/dts/stm32mp157c-qsmp-157c.dts
 +	uart4_pins_mx: uart4-pins-mx {
 +		pins1 {
 +			pinmux = <STM32_PINMUX('B', 2, AF8)>; /* UART4_RX */
-+			bias-disable;
++			bias-pull-up;
 +		};
 +
 +		pins2 {
@@ -4936,3 +4987,178 @@ Index: u-boot/arch/arm/dts/stm32mp153a-txmp.h
 +#define DDR_ADDRMAP6	0x0F0F0606
 +
 +#include "stm32mp15-mx.h"
+Index: u-boot/board/karo/common/fdt.c
+===================================================================
+--- /dev/null
++++ u-boot/board/karo/common/fdt.c
+@@ -0,0 +1,170 @@
++// SPDX-License-Identifier: GPL-2.0
++/*
++ * (C) Copyright 2019 Lothar Waßmann <LW@KARO-electronics.de>
++ *
++ */
++
++#include <common.h>
++#include <console.h>
++#include <fdt_support.h>
++#include <fs.h>
++#include <linux/libfdt.h>
++#include "karo.h"
++
++#ifdef CONFIG_MAX_DTB_SIZE
++#define MAX_DTB_SIZE	CONFIG_MAX_DTB_SIZE
++#else
++#define MAX_DTB_SIZE	SZ_64K
++#endif
++
++DECLARE_GLOBAL_DATA_PTR;
++
++static void karo_set_fdtsize(void *fdt)
++{
++	size_t fdtsize = env_get_ulong("fdtsize", 16, 0);
++
++	if (fdtsize == fdt_totalsize(fdt))
++		return;
++
++	debug("FDT size changed from %u to %u\n", fdtsize, fdt_totalsize(fdt));
++	env_set_hex("fdtsize", fdt_totalsize(fdt));
++}
++
++static void *karo_fdt_load_dtb(void)
++{
++	int ret;
++	void *fdt;
++	const char *bootdev = env_get("bootdev");
++	const char *bootpart = env_get("bootpart");
++	const char *dtbfile = env_get("dtbfile");
++	ulong fdtaddr;
++	loff_t fdtsize;
++
++	if (had_ctrlc()) {
++		printf("aborting DTB load\n");
++		return NULL;
++	}
++
++	if (!env_get("fdtaddr"))
++		env_set_hex("fdtaddr", CONFIG_SYS_FDT_ADDR);
++
++	fdtaddr = env_get_ulong("fdtaddr", 16, CONFIG_SYS_FDT_ADDR);
++	fdt = (void *)fdtaddr;
++
++	if (!dtbfile)
++		return NULL;
++
++	/* clear FDT header in memory */
++	memset(fdt, 0, 4);
++
++	if (fs_set_blk_dev(bootdev, bootpart, FS_TYPE_ANY))
++		return NULL;
++
++	ret = fs_read(dtbfile, fdtaddr, 0, MAX_DTB_SIZE, &fdtsize);
++	if (ret) {
++		printf("Failed to load dtb from '%s': %d\n",
++		       dtbfile, ret);
++		return NULL;
++	}
++
++	if (fdt_check_header(fdt)) {
++		debug("No valid DTB in flash\n");
++		return NULL;
++	}
++	debug("Using DTB from flash\n");
++	karo_set_fdtsize(fdt);
++	return fdt;
++}
++
++void karo_fdt_move_fdt(void)
++{
++	void *fdt;
++	unsigned long fdt_addr = env_get_ulong("fdtaddr", 16, 0);
++
++	if (working_fdt) {
++		debug("DTB already loaded\n");
++		return;
++	}
++
++	env_set("fdtsize", 0);
++
++	if (!fdt_addr) {
++		fdt_addr = CONFIG_SYS_FDT_ADDR;
++		printf("fdtaddr is not set; using default: %08lx\n", fdt_addr);
++	}
++
++	fdt = karo_fdt_load_dtb();
++	if (!fdt) {
++		fdt = (void *)gd->fdt_blob;
++		if (!fdt) {
++#ifdef CONFIG_OF_EMBED
++			printf("Compiled in FDT not found");
++#else
++			printf("No FDT found");
++#endif
++			printf("; creating empty DTB\n");
++			fdt = (void *)fdt_addr;
++			fdt_create_empty_tree(fdt, 256);
++		} else {
++			printf("No DTB in flash; using default DTB\n");
++		}
++		debug("Checking FDT header @ %p\n", fdt);
++		if (fdt_check_header(fdt)) {
++			printf("ERROR: No valid DTB found at %p\n", fdt);
++			return;
++		}
++		debug("Moving FDT from %p..%p to %08lx..%08lx\n",
++		      fdt, fdt + fdt_totalsize(fdt) - 1,
++		      fdt_addr, fdt_addr + fdt_totalsize(fdt) - 1);
++		memmove((void *)fdt_addr, fdt, fdt_totalsize(fdt));
++	}
++	set_working_fdt_addr(fdt_addr);
++	gd->fdt_blob = fdt;
++	karo_set_fdtsize(fdt);
++}
++
++static int karo_fdt_find_subnode(const void *blob, int offs, const char *name)
++{
++	int node;
++
++	if (offs <= 0)
++		return offs;
++
++	fdt_for_each_subnode(node, blob, offs) {
++		const char *nn = fdt_get_name(blob, node, NULL);
++
++		if (strcmp(name, nn) == 0)
++			return node;
++	}
++	return -FDT_ERR_NOTFOUND;
++}
++
++void karo_fixup_lcd_panel(void *blob, const char *videomode)
++{
++	int ret;
++	int panel_offs = fdt_path_offset(blob, "display");
++	int dt;
++	const char *compat = NULL;
++
++	if (panel_offs <= 0) {
++		printf("No 'display' node found\n");
++		return;
++	}
++
++	dt = fdt_subnode_offset(blob, panel_offs, "display-timings");
++	if (dt > 0) {
++		int node = karo_fdt_find_subnode(blob, dt, videomode);
++
++		compat = fdt_getprop(blob, node, "u-boot,panel-name", NULL);
++	}
++	if (!compat)
++		compat = videomode;
++
++	printf("videomode='%s' compatible='%s'\n", videomode, compat);
++	ret = fdt_setprop_string(blob, panel_offs, "compatible",
++				 compat);
++	if (ret)
++		printf("Warning: Failed to set 'compatible' property for '%s': - %s\n",
++		       fdt_get_name(blob, panel_offs, NULL),
++		       fdt_strerror(ret));
++}

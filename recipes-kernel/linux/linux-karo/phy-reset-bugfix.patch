@@ -1,0 +1,50 @@
+Index: karo-tx-linux/drivers/net/phy/mdio_bus.c
+===================================================================
+--- karo-tx-linux.orig/drivers/net/phy/mdio_bus.c
++++ karo-tx-linux/drivers/net/phy/mdio_bus.c
+@@ -392,12 +392,18 @@ int __mdiobus_register(struct mii_bus *b
+ 		dev_err(&bus->dev, "mii_bus %s couldn't get reset GPIO\n",
+ 			bus->id);
+ 		return PTR_ERR(gpiod);
+-	} else	if (gpiod) {
++	} else if (gpiod) {
+ 		bus->reset_gpiod = gpiod;
+ 
+ 		gpiod_set_value_cansleep(gpiod, 1);
+ 		udelay(bus->reset_delay_us);
+ 		gpiod_set_value_cansleep(gpiod, 0);
++		if (bus->post_reset_delay_us < 1000)
++			udelay(bus->post_reset_delay_us);
++		else
++			usleep_range(bus->post_reset_delay_us,
++				     bus->post_reset_delay_us +
++				     bus->post_reset_delay_us / 10);
+ 	}
+ 
+ 	if (bus->reset)
+Index: karo-tx-linux/drivers/of/of_mdio.c
+===================================================================
+--- karo-tx-linux.orig/drivers/of/of_mdio.c
++++ karo-tx-linux/drivers/of/of_mdio.c
+@@ -221,6 +221,8 @@ int of_mdiobus_register(struct mii_bus *
+ 	/* Get bus level PHY reset GPIO details */
+ 	mdio->reset_delay_us = DEFAULT_GPIO_RESET_DELAY;
+ 	of_property_read_u32(np, "reset-delay-us", &mdio->reset_delay_us);
++	of_property_read_u32(np, "post-reset-delay-us",
++			     &mdio->post_reset_delay_us);
+ 
+ 	/* Register the MDIO bus */
+ 	rc = mdiobus_register(mdio);
+Index: karo-tx-linux/include/linux/phy.h
+===================================================================
+--- karo-tx-linux.orig/include/linux/phy.h
++++ karo-tx-linux/include/linux/phy.h
+@@ -231,6 +231,8 @@ struct mii_bus {
+ 
+ 	/* GPIO reset pulse width in microseconds */
+ 	int reset_delay_us;
++	/* recovery time after reset pulse in microseconds */
++	int post_reset_delay_us;
+ 	/* RESET GPIO descriptor pointer */
+ 	struct gpio_desc *reset_gpiod;
+ };

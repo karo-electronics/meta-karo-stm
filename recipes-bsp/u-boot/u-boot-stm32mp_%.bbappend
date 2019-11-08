@@ -3,6 +3,9 @@ STM32MP_SOURCE_SELECTION = "github"
 FILESEXTRAPATHS_prepend := "${THISDIR}/u-boot-karo:"
 SRC_URI_append = " \
   file://karo.bmp;subdir=git/tools/logos \
+  file://env-callback-bugfix.patch \
+  file://env-callback-returnvalue.patch \
+  file://dot_callbacks-bugfix.patch \
   file://bmp-logo.patch \
   file://rtc_to_tm-bugfix.patch \
   file://backlight-errmsgs.patch \
@@ -34,6 +37,7 @@ SRC_URI_append = " \
   file://dwc-eth-bugfix.patch \
   file://dwc-eth-phy-reset.patch \
   file://stm-bugfixes.patch \
+  file://fdtsize-variable.patch \
   file://txmp-support.patch \
 "
 
@@ -42,12 +46,12 @@ UBOOT_CONFIG = ""
 UBOOT_CONFIG += "${@bb.utils.contains('BOOTSCHEME_LABELS', 'basic', 'basic', '', d)}"
 UBOOT_CONFIG += "${@bb.utils.contains('BOOTSCHEME_LABELS', 'mfg', 'mfg', '', d)}"
 UBOOT_CONFIG += "${@bb.utils.contains('BOOTSCHEME_LABELS', 'noenv', 'noenv', '', d)}"
-UBOOT_CONFIG += "${@bb.utils.contains('BOOTSCHEME_LABELS', 'sec', 'sec', '', d)}"
+UBOOT_CONFIG += "${@bb.utils.contains('BOOTSCHEME_LABELS', 'trusted', 'trusted', '', d)}"
 
 # =========================================================================
 # U-Boot configs
 # =========================================================================
-UBOOT_CONFIG[basic]   = "qsmp-157c_defconfig,,u-boot.img"
-UBOOT_CONFIG[noenv]   = "qsmp-157c_noenv_defconfig,,u-boot.img"
-UBOOT_CONFIG[mfg] = "qsmp-157c_mfg_defconfig,,u-boot.stm32"
-UBOOT_CONFIG[sec] = "qsmp-157c_sec_defconfig,,u-boot.stm32"
+UBOOT_CONFIG[basic]   = "qsmp-1570_defconfig,,u-boot.img"
+UBOOT_CONFIG[noenv]   = "qsmp-1570_noenv_defconfig,,u-boot.img"
+UBOOT_CONFIG[mfg] = "qsmp-1570_mfg_defconfig,,u-boot.stm32"
+UBOOT_CONFIG[trusted] = "qsmp-1570_trusted_defconfig,,u-boot.stm32"

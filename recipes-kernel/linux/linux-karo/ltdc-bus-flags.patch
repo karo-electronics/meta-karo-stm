@@ -1,0 +1,95 @@
+Index: karo-tx-linux/drivers/gpu/drm/stm/drv.c
+===================================================================
+--- karo-tx-linux.orig/drivers/gpu/drm/stm/drv.c
++++ karo-tx-linux/drivers/gpu/drm/stm/drv.c
+@@ -86,7 +86,8 @@ static int drv_load(struct drm_device *d
+ 	if (!ldev)
+ 		return -ENOMEM;
+ 
+-	ddev->dev_private = (void *)ldev;
++	ddev->dev_private = ldev;
++	ldev->dev = ddev;
+ 
+ 	drm_mode_config_init(ddev);
+ 
+Index: karo-tx-linux/drivers/gpu/drm/stm/ltdc.c
+===================================================================
+--- karo-tx-linux.orig/drivers/gpu/drm/stm/ltdc.c
++++ karo-tx-linux/drivers/gpu/drm/stm/ltdc.c
+@@ -21,6 +21,7 @@
+ #include <drm/drm_gem_cma_helper.h>
+ #include <drm/drm_of.h>
+ #include <drm/drm_bridge.h>
++#include <drm/drm_panel.h>
+ #include <drm/drm_plane_helper.h>
+ 
+ #include <video/videomode.h>
+@@ -522,6 +523,48 @@ ltdc_crtc_mode_valid(struct drm_crtc *cr
+ 	return MODE_OK;
+ }
+ 
++static u32 ltdc_bus_flags_to_display_flags(struct ltdc_device *ldev, u32 flags)
++{
++	struct drm_panel *panel;
++	struct device_node *parent = ldev->dev->dev->of_node;
++	struct device_node *ep;
++	struct device_node *rep;
++	u32 adjusted_flags = flags;
++
++	ep = of_graph_get_next_endpoint(parent, NULL);
++	if (!ep) {
++		DRM_ERROR("'endpoint' node not found for %s\n",
++			  parent->name);
++		return flags;
++	}
++	rep = of_graph_get_remote_port_parent(ep);
++	if (!rep) {
++		DRM_ERROR("remote endpoint not found for %s\n",
++			  ep->name);
++		of_node_put(ep);
++		return flags;
++	}
++	panel = of_drm_find_panel(rep);
++	if (!IS_ERR(panel)) {
++		const u32 bus_flags = panel->connector->display_info.bus_flags;
++
++		if (bus_flags & DRM_BUS_FLAG_PIXDATA_POSEDGE)
++			adjusted_flags |= DISPLAY_FLAGS_PIXDATA_POSEDGE;
++		if (bus_flags & DRM_BUS_FLAG_PIXDATA_NEGEDGE)
++			adjusted_flags |= DISPLAY_FLAGS_PIXDATA_NEGEDGE;
++		if (bus_flags & DRM_BUS_FLAG_DE_HIGH)
++			adjusted_flags |= DISPLAY_FLAGS_DE_HIGH;
++		if (bus_flags & DRM_BUS_FLAG_DE_LOW)
++			adjusted_flags |= DISPLAY_FLAGS_DE_LOW;
++	} else {
++		DRM_ERROR("No panel found for %s: %ld\n",
++			  rep ? rep->name : NULL, PTR_ERR(panel));
++	}
++	of_node_put(rep);
++	of_node_put(ep);
++	return adjusted_flags;
++}
++
+ static bool ltdc_crtc_mode_fixup(struct drm_crtc *crtc,
+ 				 const struct drm_display_mode *mode,
+ 				 struct drm_display_mode *adjusted_mode)
+@@ -558,6 +601,7 @@ static void ltdc_crtc_mode_set_nofb(stru
+ 		return;
+ 
+ 	drm_display_mode_to_videomode(mode, &vm);
++	vm.flags = ltdc_bus_flags_to_display_flags(ldev, vm.flags);
+ 
+ 	DRM_DEBUG_DRIVER("CRTC:%d mode:%s\n", crtc->base.id, mode->name);
+ 	DRM_DEBUG_DRIVER("Video mode: %dx%d", vm.hactive, vm.vactive);
+Index: karo-tx-linux/drivers/gpu/drm/stm/ltdc.h
+===================================================================
+--- karo-tx-linux.orig/drivers/gpu/drm/stm/ltdc.h
++++ karo-tx-linux/drivers/gpu/drm/stm/ltdc.h
+@@ -38,6 +38,7 @@ struct ltdc_device {
+ 	struct fps_info plane_fpsi[LTDC_MAX_LAYER];
+ 	struct drm_atomic_state *suspend_state;
+ 	bool power_on;
++	struct drm_device *dev;
+ };
+ 
+ bool ltdc_crtc_scanoutpos(struct drm_device *dev, unsigned int pipe,

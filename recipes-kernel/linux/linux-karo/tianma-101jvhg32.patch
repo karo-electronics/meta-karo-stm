@@ -1,0 +1,76 @@
+commit 7f9bd68b05daa26d92546368e81d3d7d1856ded0
+Author: Lothar Waßmann <LW@KARO-electronics.de>
+Date:   Tue Feb 5 09:44:38 2019 +0100
+
+    TX8M Support mit ET050001DMA Display
+
+Index: karo-tx-linux/drivers/gpu/drm/panel/panel-simple.c
+===================================================================
+--- karo-tx-linux.orig/drivers/gpu/drm/panel/panel-simple.c
++++ karo-tx-linux/drivers/gpu/drm/panel/panel-simple.c
+@@ -2761,6 +2761,52 @@ static const struct panel_desc_dsi panas
+ 	.lanes = 4,
+ };
+ 
++static const struct display_timing tianma_tm101jvhg32_timing = {
++	.pixelclock = { 62600000, 68200000, 78100000, },
++	.hactive = { 1280, 1280, 1280, },
++	.hfront_porch = { 15, 64, 159, },
++	.hback_porch = { 5, 4, 149, },
++	.hsync_len = { 20, 1, 256, },
++	.vactive = { 800, 800, 800, },
++	.vfront_porch = { 3, 40, 99, },
++	.vback_porch = { 2, 1, 61, },
++	.vsync_len = { 1, 1, 128, },
++	.flags = DISPLAY_FLAGS_DE_HIGH |
++		DISPLAY_FLAGS_HSYNC_LOW | DISPLAY_FLAGS_VSYNC_LOW,
++};
++
++static const struct panel_desc_dsi tianma_tm101jvhg32 = {
++	.desc = {
++		.timings = &tianma_tm101jvhg32_timing,
++		.num_timings = 1,
++		.bpc = 8,
++		.size = {
++			.width = 217,
++			.height = 136,
++		},
++		.bus_format = MEDIA_BUS_FMT_RGB888_1X24,
++	},
++	.flags = MIPI_DSI_MODE_VIDEO | MIPI_DSI_MODE_VIDEO_BURST,
++	.format = MIPI_DSI_FMT_RGB888,
++	.lanes = 4,
++};
++
++static const struct panel_desc_dsi tianma_tm101jvhg32_2 = {
++	.desc = {
++		.timings = &tianma_tm101jvhg32_timing,
++		.num_timings = 1,
++		.bpc = 8,
++		.size = {
++			.width = 217,
++			.height = 136,
++		},
++		.bus_format = MEDIA_BUS_FMT_RGB888_1X24,
++	},
++	.flags = MIPI_DSI_MODE_VIDEO | MIPI_DSI_MODE_VIDEO_BURST,
++	.format = MIPI_DSI_FMT_RGB888,
++	.lanes = 2,
++};
++
+ static const struct of_device_id dsi_of_match[] = {
+ 	{
+ 		.compatible = "auo,b080uan01",
+@@ -2778,6 +2824,12 @@ static const struct of_device_id dsi_of_
+ 		.compatible = "panasonic,vvx10f004b00",
+ 		.data = &panasonic_vvx10f004b00
+ 	}, {
++		.compatible = "tianma,tm101jvhg32",
++		.data = &tianma_tm101jvhg32,
++	}, {
++		.compatible = "tianma,tm101jvhg32-2",
++		.data = &tianma_tm101jvhg32_2,
++	}, {
+ 		/* sentinel */
+ 	}
+ };
