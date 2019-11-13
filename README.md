@@ -2,4 +2,4 @@
 
 See our offilcial documentation for using this layer.
 
-_URL COMING SOON - STAY TUNED ;-)_
+https://karo-electronics.github.io/docs/yocto-guide/yocto-thud-guide/index.html
