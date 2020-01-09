@@ -2,7 +2,7 @@ Index: karo-tx-linux/arch/arm/boot/dts/stm32mp153a-txmp-1531.dts
 ===================================================================
 --- /dev/null
 +++ karo-tx-linux/arch/arm/boot/dts/stm32mp153a-txmp-1531.dts
-@@ -0,0 +1,599 @@
+@@ -0,0 +1,605 @@
 +// SPDX-License-Identifier: (GPL-2.0+ OR BSD-3-Clause)
 +/*
 + * Copyright (C) STMicroelectronics 2019 - All Rights Reserved
@@ -226,6 +226,12 @@ Index: karo-tx-linux/arch/arm/boot/dts/stm32mp153a-txmp-1531.dts
 +	pinctrl-names = "default", "sleep";
 +	pinctrl-0 = <&txmp_uart7_pins>;
 +	pinctrl-1 = <&txmp_uart7_sleep_pins>;
++	status = "okay";
++};
++
++&usbh_ohci {
++	phy-names = "usb";
++	phys = <&usbphyc_port0>;
 +	status = "okay";
 +};
 +
@@ -2664,7 +2670,7 @@ Index: karo-tx-linux/arch/arm/configs/txmp_defconfig
 ===================================================================
 --- /dev/null
 +++ karo-tx-linux/arch/arm/configs/txmp_defconfig
-@@ -0,0 +1,382 @@
+@@ -0,0 +1,384 @@
 +CONFIG_SYSVIPC=y
 +CONFIG_POSIX_MQUEUE=y
 +CONFIG_USELIB=y
@@ -2912,6 +2918,8 @@ Index: karo-tx-linux/arch/arm/configs/txmp_defconfig
 +CONFIG_USB_EHCI_HCD=y
 +CONFIG_USB_EHCI_ROOT_HUB_TT=y
 +CONFIG_USB_EHCI_HCD_PLATFORM=y
++CONFIG_USB_OHCI_HCD=y
++CONFIG_USB_OHCI_HCD_PLATFORM=y
 +CONFIG_USB_STORAGE=y
 +CONFIG_USB_DWC2=y
 +CONFIG_USB_DWC2_DEBUG=y
