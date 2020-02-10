@@ -1,0 +1,13 @@
+Index: u-boot/fs/fat/fat_write.c
+===================================================================
+--- u-boot.orig/fs/fat/fat_write.c
++++ u-boot/fs/fat/fat_write.c
+@@ -828,7 +828,7 @@ set_contents(fsdata *mydata, dir_entry *
+ 
+ 	curclust = endclust;
+ 	filesize -= cur_pos;
+-	assert(!(cur_pos % bytesperclust));
++	assert(lldiv(cur_pos, bytesperclust) * bytesperclust == cur_pos);
+ 
+ set_clusters:
+ 	/* allocate and write */

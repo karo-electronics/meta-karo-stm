@@ -1,0 +1,20 @@
+Index: u-boot/drivers/core/regmap.c
+===================================================================
+--- u-boot.orig/drivers/core/regmap.c
++++ u-boot/drivers/core/regmap.c
+@@ -80,7 +80,14 @@ int regmap_init_mem(ofnode node, struct
+ 	     count--, range++, index++) {
+ 		fdt_size_t sz;
+ 		if (of_live_active()) {
+-			of_address_to_resource(ofnode_to_np(node), index, &r);
++			int ret = of_address_to_resource(ofnode_to_np(node),
++							 index, &r);
++
++			if (ret) {
++				pr_err("of_address_to_resource() failed: %d\n",
++				       ret);
++				return ret;
++			}
+ 			range->start = r.start;
+ 			range->size = r.end - r.start + 1;
+ 		} else {

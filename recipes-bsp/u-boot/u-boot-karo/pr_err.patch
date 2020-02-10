@@ -71,12 +71,9 @@ Index: u-boot/arch/arm/mach-stm32mp/cmd_stm32prog/stm32prog.c
 ===================================================================
 --- u-boot.orig/arch/arm/mach-stm32mp/cmd_stm32prog/stm32prog.c
 +++ u-boot/arch/arm/mach-stm32mp/cmd_stm32prog/stm32prog.c
-@@ -100,30 +100,30 @@ u8 stm32prog_header_check(struct raw_hea
- 	header->image_checksum = 0x0;
- 	header->image_length = 0x0;
+@@ -102,28 +102,28 @@ u8 stm32prog_header_check(struct raw_hea
  
--	/*pr_debug("%s entry\n", __func__);*/
-+	pr_debug("%s entry\n", __func__);
+ 	/*pr_debug("%s entry\n", __func__);*/
  	if (!raw_header || !header) {
 -		pr_debug("%s:no header data\n", __func__);
 +		pr_err("%s: no header data\n", __func__);
@@ -110,15 +107,6 @@ Index: u-boot/arch/arm/mach-stm32mp/cmd_stm32prog/stm32prog.c
  			return -5;
  		}
  	}
-@@ -131,7 +131,7 @@ u8 stm32prog_header_check(struct raw_hea
- 	header->image_checksum = le32_to_cpu(raw_header->image_checksum);
- 	header->image_length = le32_to_cpu(raw_header->image_length);
- 
--	/*pr_debug("%s exit\n", __func__);*/
-+	pr_debug("%s exit\n", __func__);
- 
- 	return 0;
- }
 @@ -185,7 +185,7 @@ static int parse_option(struct stm32prog
  		return -EINVAL;
  	}

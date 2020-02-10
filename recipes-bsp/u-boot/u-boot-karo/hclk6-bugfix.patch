@@ -11,14 +11,3 @@ Index: u-boot/drivers/clk/clk_stm32mp1.c
  	[_HCLK2] = "HCLK2",
  	[_CK_PER] = "CK_PER",
  	[_CK_MPU] = "CK_MPU",
-@@ -2018,8 +2018,8 @@ static void  __maybe_unused stm32mp1_clk
- 			       stm32mp1_clk_parent_sel_name[i], i,
- 			       stm32mp1_clk_parent_name[s], s);
- 		} else {
--			printf("- %s(%d) => parent index %d is invalid\n",
--			       stm32mp1_clk_parent_sel_name[i], i, p);
-+			printf("- %s(%d) => DISABLED\n",
-+			       stm32mp1_clk_parent_sel_name[i], i);
- 		}
- 	}
- }

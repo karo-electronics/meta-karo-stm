@@ -1,0 +1,89 @@
+Index: u-boot/drivers/core/of_access.c
+===================================================================
+--- u-boot.orig/drivers/core/of_access.c
++++ u-boot/drivers/core/of_access.c
+@@ -63,6 +63,7 @@ struct alias_prop {
+ 	char stem[0];
+ };
+ 
++#ifdef NP_PARENT_BUGFIX
+ int of_n_addr_cells(const struct device_node *np)
+ {
+ 	const __be32 *ip;
+@@ -92,6 +93,39 @@ int of_n_size_cells(const struct device_
+ 	/* No #size-cells property for the root node */
+ 	return OF_ROOT_NODE_SIZE_CELLS_DEFAULT;
+ }
++#else
++int of_n_addr_cells(const struct device_node *np)
++{
++	const __be32 *ip;
++
++	do {
++		if (np->parent)
++			np = np->parent;
++		ip = of_get_property(np, "#address-cells", NULL);
++		if (ip)
++			return be32_to_cpup(ip);
++	} while (np->parent);
++
++	/* No #address-cells property for the root node */
++	return OF_ROOT_NODE_ADDR_CELLS_DEFAULT;
++}
++
++int of_n_size_cells(const struct device_node *np)
++{
++	const __be32 *ip;
++
++	do {
++		if (np->parent)
++			np = np->parent;
++		ip = of_get_property(np, "#size-cells", NULL);
++		if (ip)
++			return be32_to_cpup(ip);
++	} while (np->parent);
++
++	/* No #size-cells property for the root node */
++	return OF_ROOT_NODE_SIZE_CELLS_DEFAULT;
++}
++#endif
+ 
+ int of_simple_addr_cells(const struct device_node *np)
+ {
+Index: u-boot/drivers/core/of_addr.c
+===================================================================
+--- u-boot.orig/drivers/core/of_addr.c
++++ u-boot/drivers/core/of_addr.c
+@@ -48,10 +48,17 @@ struct of_bus {
+ static void of_bus_default_count_cells(const struct device_node *np,
+ 				       int *addrc, int *sizec)
+ {
++#ifdef NP_PARENT_BUGFIX
+ 	if (addrc)
+ 		*addrc = of_n_addr_cells(np->parent);
+ 	if (sizec)
+ 		*sizec = of_n_size_cells(np->parent);
++#else
++	if (addrc)
++		*addrc = of_n_addr_cells(np);
++	if (sizec)
++		*sizec = of_n_size_cells(np);
++#endif
+ }
+ 
+ static u64 of_bus_default_map(__be32 *addr, const __be32 *range,
+Index: u-boot/include/dm/of_access.h
+===================================================================
+--- u-boot.orig/include/dm/of_access.h
++++ u-boot/include/dm/of_access.h
+@@ -17,6 +17,10 @@
+ #ifndef _DM_OF_ACCESS_H
+ #define _DM_OF_ACCESS_H
+ 
++#ifdef CONFIG_OF_LIVE
++#define NP_PARENT_BUGFIX
++#endif
++
+ #include <dm/of.h>
+ 
+ /**

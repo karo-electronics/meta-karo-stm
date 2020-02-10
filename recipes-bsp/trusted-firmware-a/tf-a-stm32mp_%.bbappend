@@ -1,6 +1,6 @@
 FILESEXTRAPATHS_prepend := "${THISDIR}/tf-a-karo:"
 SRC_URI_append = " \
-  file://tf-a-karo-r1.1.patch \
+  file://tf-a-karo-r1.1-3.patch \
 "
 
 # Extra make settings

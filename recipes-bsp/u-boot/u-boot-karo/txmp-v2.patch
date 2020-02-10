@@ -1,0 +1,3946 @@
+Index: u-boot/board/karo/txmp/Kconfig
+===================================================================
+--- u-boot.orig/board/karo/txmp/Kconfig
++++ u-boot/board/karo/txmp/Kconfig
+@@ -11,18 +11,24 @@ config SYS_VENDOR
+ config SYS_CONFIG_NAME
+ 	default "txmp"
+ 
+-config KARO_TXMP_1531
+-	bool "Ka-Ro TXMP-1531 module"
++config KARO_TXMP_1530
++	bool "Ka-Ro TXMP-1530 module"
+ 	help
+-	  Enable support for the Ka-Ro electronics TXMP-1531 module featuring
+-	  an STM32MP153 SOC, up to 1GiB of SDRAM and 4GiB or 8GiB eMMC.
++	  Enable support for the Ka-Ro electronics TXMP-1530 module featuring
++	  an STM32MP153A SOC, up to 1GiB of SDRAM and 4GiB or 8GiB eMMC.
++
++config KARO_TXMP_1570
++	bool "Ka-Ro TXMP-1570 module"
++	help
++	  Enable support for the Ka-Ro electronics TXMP-1570 module featuring
++	  an STM32MP157C SOC, 256MiB of SDRAM and 4GiB or 8GiB eMMC.
+ 
+ config KARO_QSMP_1570
+ 	bool "Ka-Ro QSMP-1570 solder-in module"
+ 	help
+ 	  Enable support for the Ka-Ro electronics QSMP-1570 module featuring
+-	  an STM32MP157 SOC, 256MiB of SDRAM and 4GiB eMMC on a solder-in
+-	  .
++	  an STM32MP157C SOC, 256MiB of SDRAM and 4GiB eMMC on a solder-in
++	  module.
+ 
+ config TXMP_SPI
+ 	bool "Support SPI NOR chip on TXMP"
+@@ -30,7 +36,7 @@ config TXMP_SPI
+ 
+ config TXMP_NAND
+ 	bool "Support NAND device on TXMP"
+-	depends on KARO_TXMP_1531 && NAND_STM32_FMC2
++	depends on (KARO_TXMP_1530 || KARO_TXMP_1570) && NAND_STM32_FMC2
+ 
+ config TXMP_EMMC
+ 	bool
+Index: u-boot/configs/txmp-1530_defconfig
+===================================================================
+--- /dev/null
++++ u-boot/configs/txmp-1530_defconfig
+@@ -0,0 +1,134 @@
++CONFIG_ARM=y
++CONFIG_ARCH_STM32MP=y
++CONFIG_SYS_MALLOC_F_LEN=0x3000
++CONFIG_SPL_MMC_SUPPORT=y
++CONFIG_SPL=y
++CONFIG_TARGET_KARO_TXMP=y
++CONFIG_KARO_TXMP_1530=y
++CONFIG_TXMP_SPI=y
++CONFIG_SPL_FAT_SUPPORT=y
++CONFIG_SPL_SPI_FLASH_SUPPORT=y
++CONFIG_SPL_SPI_SUPPORT=y
++# CONFIG_ARMV7_VIRT is not set
++CONFIG_DEBUG_UART=y
++CONFIG_DISTRO_DEFAULTS=y
++# CONFIG_ANDROID_BOOT_IMAGE is not set
++CONFIG_FIT=y
++CONFIG_QSPI_BOOT=y
++CONFIG_BOOTDELAY=1
++CONFIG_LOGLEVEL=7
++# CONFIG_CONSOLE_MUX is not set
++CONFIG_VERSION_VARIABLE=y
++CONFIG_SPL_DISABLE_BANNER_PRINT=y
++# CONFIG_SPL_DISPLAY_PRINT is not set
++CONFIG_SYS_MMCSD_RAW_MODE_U_BOOT_USE_PARTITION=y
++CONFIG_SPL_ENV_SUPPORT=y
++CONFIG_SPL_SAVEENV=y
++CONFIG_SPL_EXT_SUPPORT=y
++CONFIG_SPL_I2C_SUPPORT=y
++CONFIG_SPL_MTD_SUPPORT=y
++CONFIG_SYS_PROMPT="TXMP U-Boot > "
++# CONFIG_CMD_ELF is not set
++# CONFIG_CMD_XIMG is not set
++CONFIG_CMD_ENV_CALLBACK=y
++CONFIG_CMD_MEMINFO=y
++CONFIG_CMD_MEMTEST=y
++CONFIG_CMD_ADC=y
++CONFIG_CMD_CLK=y
++# CONFIG_CMD_FLASH is not set
++CONFIG_CMD_FUSE=y
++CONFIG_CMD_GPIO=y
++CONFIG_CMD_GPT=y
++CONFIG_CMD_I2C=y
++# CONFIG_CMD_LOADS is not set
++CONFIG_CMD_MMC=y
++CONFIG_CMD_MTD=y
++CONFIG_CMD_READ=y
++CONFIG_CMD_REMOTEPROC=y
++CONFIG_CMD_SF=y
++CONFIG_CMD_SF_TEST=y
++CONFIG_CMD_USB=y
++CONFIG_CMD_USB_MASS_STORAGE=y
++CONFIG_BOOTP_RANDOM_ID=y
++CONFIG_CMD_BMP=y
++CONFIG_CMD_BKOPS_ENABLE=y
++CONFIG_CMD_CACHE=y
++CONFIG_CMD_TIME=y
++CONFIG_CMD_TIMER=y
++CONFIG_CMD_UUID=y
++CONFIG_CMD_EXT4_WRITE=y
++CONFIG_CMD_MTDPARTS=y
++CONFIG_CMD_UBI=y
++# CONFIG_SPL_DOS_PARTITION is not set
++# CONFIG_ISO_PARTITION is not set
++CONFIG_PARTITION_TYPE_GUID=y
++CONFIG_DEFAULT_DEVICE_TREE="stm32mp153a-txmp-1530"
++CONFIG_ENV_IS_IN_MMC=y
++CONFIG_STM32_ADC=y
++CONFIG_USB_FUNCTION_FASTBOOT=y
++CONFIG_FASTBOOT_BUF_ADDR=0xC0000000
++CONFIG_FASTBOOT_BUF_SIZE=0x02000000
++CONFIG_FASTBOOT_USB_DEV=1
++CONFIG_FASTBOOT_FLASH=y
++CONFIG_FASTBOOT_FLASH_MMC_DEV=0
++CONFIG_DM_HWSPINLOCK=y
++CONFIG_HWSPINLOCK_STM32=y
++CONFIG_DM_I2C=y
++CONFIG_SYS_I2C_STM32F7=y
++# CONFIG_INPUT is not set
++CONFIG_LED=y
++CONFIG_LED_GPIO=y
++CONFIG_DM_MAILBOX=y
++CONFIG_STM32_IPCC=y
++CONFIG_DM_MMC=y
++CONFIG_STM32_SDMMC2=y
++CONFIG_MTD=y
++CONFIG_MTD_DEVICE=y
++CONFIG_DM_SPI_FLASH=y
++CONFIG_SPI_FLASH=y
++CONFIG_SPI_FLASH_BAR=y
++CONFIG_SPI_FLASH_GIGADEVICE=y
++# CONFIG_SPI_FLASH_USE_4K_SECTORS is not set
++CONFIG_SPI_FLASH_MTD=y
++CONFIG_CONFIG_UBI_SILENCE_MSG=y
++CONFIG_DM_ETH=y
++CONFIG_DWC_ETH_QOS=y
++CONFIG_PHY=y
++CONFIG_PHY_STM32_USBPHYC=y
++CONFIG_PINCONF=y
++# CONFIG_SPL_PINCTRL_FULL is not set
++CONFIG_DM_PMIC=y
++# CONFIG_SPL_PMIC_CHILDREN is not set
++CONFIG_PMIC_STPMIC1=y
++CONFIG_DM_REGULATOR_FIXED=y
++CONFIG_DM_REGULATOR_STM32_VREFBUF=y
++CONFIG_REMOTEPROC_STM32_COPRO=y
++CONFIG_DEBUG_UART_STM32=y
++CONFIG_SPI=y
++CONFIG_DM_SPI=y
++CONFIG_STM32_QSPI=y
++CONFIG_USB=y
++CONFIG_DM_USB=y
++CONFIG_USB_EHCI_HCD=y
++CONFIG_USB_EHCI_GENERIC=y
++CONFIG_USB_STORAGE=y
++CONFIG_USB_GADGET=y
++CONFIG_USB_GADGET_MANUFACTURER="STMicroelectronics"
++CONFIG_USB_GADGET_VENDOR_NUM=0x0483
++CONFIG_USB_GADGET_PRODUCT_NUM=0x5720
++CONFIG_USB_GADGET_DWC2_OTG=y
++CONFIG_DM_VIDEO=y
++CONFIG_BACKLIGHT_GPIO=y
++# CONFIG_VIDEO_ANSI is not set
++CONFIG_CONSOLE_ROTATION=y
++CONFIG_VIDEO_STM32=y
++CONFIG_VIDEO_STM32_MAX_XRES=1280
++CONFIG_VIDEO_STM32_MAX_YRES=800
++CONFIG_VIDEO_DT_SIMPLEFB=y
++CONFIG_WDT=y
++CONFIG_WDT_STM32MP=y
++CONFIG_FAT_WRITE=y
++CONFIG_UBIFS_SILENCE_MSG=y
++# CONFIG_REGEX is not set
++CONFIG_FDT_FIXUP_PARTITIONS=y
++# CONFIG_EFI_LOADER is not set
+Index: u-boot/configs/txmp-1530_mfg_defconfig
+===================================================================
+--- /dev/null
++++ u-boot/configs/txmp-1530_mfg_defconfig
+@@ -0,0 +1,108 @@
++CONFIG_ARM=y
++CONFIG_ARCH_STM32MP=y
++CONFIG_SYS_MALLOC_F_LEN=0x3000
++CONFIG_TARGET_KARO_TXMP=y
++CONFIG_KARO_TXMP_1530=y
++CONFIG_TXMP_SPI=y
++CONFIG_KARO_UBOOT_MFG=y
++CONFIG_DEBUG_UART=y
++CONFIG_DISTRO_DEFAULTS=y
++# CONFIG_ANDROID_BOOT_IMAGE is not set
++CONFIG_FIT=y
++CONFIG_QSPI_BOOT=y
++CONFIG_BOOTDELAY=0
++CONFIG_LOGLEVEL=7
++CONFIG_VERSION_VARIABLE=y
++CONFIG_SYS_PROMPT="TXMP U-Boot > "
++# CONFIG_CMD_ELF is not set
++# CONFIG_CMD_XIMG is not set
++CONFIG_CMD_ENV_CALLBACK=y
++CONFIG_CMD_MEMINFO=y
++CONFIG_CMD_MEMTEST=y
++CONFIG_CMD_ADC=y
++CONFIG_CMD_CLK=y
++CONFIG_CMD_DFU=y
++# CONFIG_CMD_FLASH is not set
++CONFIG_CMD_FUSE=y
++CONFIG_CMD_GPIO=y
++CONFIG_CMD_I2C=y
++# CONFIG_CMD_LOADS is not set
++CONFIG_CMD_MMC=y
++CONFIG_CMD_MTD=y
++CONFIG_CMD_READ=y
++CONFIG_CMD_REMOTEPROC=y
++CONFIG_CMD_SF=y
++CONFIG_CMD_SF_TEST=y
++CONFIG_CMD_USB=y
++CONFIG_CMD_USB_MASS_STORAGE=y
++CONFIG_BOOTP_RANDOM_ID=y
++CONFIG_CMD_BKOPS_ENABLE=y
++CONFIG_CMD_CACHE=y
++CONFIG_CMD_TIME=y
++CONFIG_CMD_TIMER=y
++CONFIG_CMD_UUID=y
++CONFIG_CMD_EXT4_WRITE=y
++CONFIG_CMD_MTDPARTS=y
++CONFIG_CMD_UBI=y
++# CONFIG_ISO_PARTITION is not set
++CONFIG_DEFAULT_DEVICE_TREE="stm32mp153a-txmp-1530"
++CONFIG_ENV_IS_IN_MMC=y
++CONFIG_STM32_ADC=y
++CONFIG_USB_FUNCTION_FASTBOOT=y
++CONFIG_FASTBOOT_BUF_ADDR=0xC0000000
++CONFIG_FASTBOOT_BUF_SIZE=0x02000000
++CONFIG_FASTBOOT_USB_DEV=1
++CONFIG_FASTBOOT_FLASH=y
++CONFIG_FASTBOOT_FLASH_MMC_DEV=0
++CONFIG_DM_HWSPINLOCK=y
++CONFIG_HWSPINLOCK_STM32=y
++CONFIG_DM_I2C=y
++CONFIG_SYS_I2C_STM32F7=y
++# CONFIG_INPUT is not set
++CONFIG_LED=y
++CONFIG_LED_GPIO=y
++CONFIG_DM_MAILBOX=y
++CONFIG_STM32_IPCC=y
++CONFIG_DM_MMC=y
++CONFIG_STM32_SDMMC2=y
++CONFIG_MTD=y
++CONFIG_MTD_DEVICE=y
++CONFIG_DM_SPI_FLASH=y
++CONFIG_SPI_FLASH=y
++CONFIG_SPI_FLASH_BAR=y
++CONFIG_SPI_FLASH_GIGADEVICE=y
++# CONFIG_SPI_FLASH_USE_4K_SECTORS is not set
++CONFIG_SPI_FLASH_MTD=y
++CONFIG_CONFIG_UBI_SILENCE_MSG=y
++CONFIG_DM_ETH=y
++CONFIG_DWC_ETH_QOS=y
++CONFIG_PHY=y
++CONFIG_PHY_STM32_USBPHYC=y
++CONFIG_PINCONF=y
++CONFIG_DM_PMIC=y
++# CONFIG_SPL_PMIC_CHILDREN is not set
++CONFIG_PMIC_STPMIC1=y
++CONFIG_DM_REGULATOR_FIXED=y
++CONFIG_DM_REGULATOR_STM32_VREFBUF=y
++CONFIG_REMOTEPROC_STM32_COPRO=y
++CONFIG_DEBUG_UART_STM32=y
++CONFIG_SPI=y
++CONFIG_DM_SPI=y
++CONFIG_STM32_QSPI=y
++CONFIG_USB=y
++CONFIG_DM_USB=y
++CONFIG_USB_EHCI_HCD=y
++CONFIG_USB_EHCI_GENERIC=y
++CONFIG_USB_STORAGE=y
++CONFIG_USB_GADGET=y
++CONFIG_USB_GADGET_MANUFACTURER="STMicroelectronics"
++CONFIG_USB_GADGET_VENDOR_NUM=0x0483
++CONFIG_USB_GADGET_PRODUCT_NUM=0x5720
++CONFIG_USB_GADGET_DWC2_OTG=y
++CONFIG_WDT=y
++CONFIG_WDT_STM32MP=y
++CONFIG_FAT_WRITE=y
++CONFIG_UBIFS_SILENCE_MSG=y
++# CONFIG_REGEX is not set
++CONFIG_FDT_FIXUP_PARTITIONS=y
++# CONFIG_EFI_LOADER is not set
+Index: u-boot/configs/txmp-1530_noenv_defconfig
+===================================================================
+--- /dev/null
++++ u-boot/configs/txmp-1530_noenv_defconfig
+@@ -0,0 +1,124 @@
++CONFIG_ARM=y
++CONFIG_ARCH_STM32MP=y
++CONFIG_SYS_MALLOC_F_LEN=0x3000
++CONFIG_SPL_MMC_SUPPORT=y
++CONFIG_SPL=y
++CONFIG_TARGET_KARO_TXMP=y
++CONFIG_KARO_TXMP_1530=y
++CONFIG_TXMP_SPI=y
++CONFIG_KARO_UBOOT_NOENV=y
++CONFIG_SPL_FAT_SUPPORT=y
++CONFIG_SPL_SPI_FLASH_SUPPORT=y
++CONFIG_SPL_SPI_SUPPORT=y
++# CONFIG_ARMV7_VIRT is not set
++CONFIG_DEBUG_UART=y
++CONFIG_DISTRO_DEFAULTS=y
++# CONFIG_ANDROID_BOOT_IMAGE is not set
++CONFIG_FIT=y
++CONFIG_QSPI_BOOT=y
++CONFIG_BOOTDELAY=-1
++CONFIG_LOGLEVEL=7
++CONFIG_VERSION_VARIABLE=y
++CONFIG_SYS_MMCSD_RAW_MODE_U_BOOT_USE_PARTITION=y
++CONFIG_SPL_ENV_SUPPORT=y
++CONFIG_SPL_SAVEENV=y
++CONFIG_SPL_EXT_SUPPORT=y
++CONFIG_SPL_I2C_SUPPORT=y
++CONFIG_SPL_MTD_SUPPORT=y
++CONFIG_SYS_PROMPT="TXMP U-Boot > "
++# CONFIG_CMD_ELF is not set
++# CONFIG_CMD_XIMG is not set
++CONFIG_CMD_ENV_CALLBACK=y
++CONFIG_CMD_MEMINFO=y
++CONFIG_CMD_MEMTEST=y
++CONFIG_CMD_ADC=y
++CONFIG_CMD_CLK=y
++# CONFIG_CMD_FLASH is not set
++CONFIG_CMD_FUSE=y
++CONFIG_CMD_GPIO=y
++CONFIG_CMD_GPT=y
++CONFIG_CMD_I2C=y
++# CONFIG_CMD_LOADS is not set
++CONFIG_CMD_MMC=y
++CONFIG_CMD_MTD=y
++CONFIG_CMD_READ=y
++CONFIG_CMD_REMOTEPROC=y
++CONFIG_CMD_SF=y
++CONFIG_CMD_SF_TEST=y
++CONFIG_CMD_USB=y
++CONFIG_CMD_USB_MASS_STORAGE=y
++CONFIG_BOOTP_RANDOM_ID=y
++CONFIG_CMD_BKOPS_ENABLE=y
++CONFIG_CMD_CACHE=y
++CONFIG_CMD_TIME=y
++CONFIG_CMD_TIMER=y
++CONFIG_CMD_UUID=y
++CONFIG_CMD_EXT4_WRITE=y
++CONFIG_CMD_MTDPARTS=y
++CONFIG_CMD_UBI=y
++# CONFIG_SPL_DOS_PARTITION is not set
++# CONFIG_ISO_PARTITION is not set
++CONFIG_PARTITION_TYPE_GUID=y
++CONFIG_DEFAULT_DEVICE_TREE="stm32mp153a-txmp-1530"
++CONFIG_ENV_IS_IN_MMC=y
++CONFIG_STM32_ADC=y
++CONFIG_USB_FUNCTION_FASTBOOT=y
++CONFIG_FASTBOOT_BUF_ADDR=0xC0000000
++CONFIG_FASTBOOT_BUF_SIZE=0x02000000
++CONFIG_FASTBOOT_USB_DEV=1
++CONFIG_FASTBOOT_FLASH=y
++CONFIG_FASTBOOT_FLASH_MMC_DEV=0
++CONFIG_DM_HWSPINLOCK=y
++CONFIG_HWSPINLOCK_STM32=y
++CONFIG_DM_I2C=y
++CONFIG_SYS_I2C_STM32F7=y
++# CONFIG_INPUT is not set
++CONFIG_LED=y
++CONFIG_LED_GPIO=y
++CONFIG_DM_MAILBOX=y
++CONFIG_STM32_IPCC=y
++CONFIG_DM_MMC=y
++CONFIG_STM32_SDMMC2=y
++CONFIG_MTD=y
++CONFIG_MTD_DEVICE=y
++CONFIG_DM_SPI_FLASH=y
++CONFIG_SPI_FLASH=y
++CONFIG_SPI_FLASH_BAR=y
++CONFIG_SPI_FLASH_GIGADEVICE=y
++# CONFIG_SPI_FLASH_USE_4K_SECTORS is not set
++CONFIG_SPI_FLASH_MTD=y
++CONFIG_CONFIG_UBI_SILENCE_MSG=y
++CONFIG_DM_ETH=y
++CONFIG_DWC_ETH_QOS=y
++CONFIG_PHY=y
++CONFIG_PHY_STM32_USBPHYC=y
++CONFIG_PINCONF=y
++# CONFIG_SPL_PINCTRL_FULL is not set
++CONFIG_DM_PMIC=y
++# CONFIG_SPL_PMIC_CHILDREN is not set
++CONFIG_PMIC_STPMIC1=y
++CONFIG_DM_REGULATOR_FIXED=y
++CONFIG_DM_REGULATOR_STM32_VREFBUF=y
++CONFIG_STM32MP1_DDR_INTERACTIVE=y
++CONFIG_REMOTEPROC_STM32_COPRO=y
++CONFIG_DEBUG_UART_STM32=y
++CONFIG_SPI=y
++CONFIG_DM_SPI=y
++CONFIG_STM32_QSPI=y
++CONFIG_USB=y
++CONFIG_DM_USB=y
++CONFIG_USB_EHCI_HCD=y
++CONFIG_USB_EHCI_GENERIC=y
++CONFIG_USB_STORAGE=y
++CONFIG_USB_GADGET=y
++CONFIG_USB_GADGET_MANUFACTURER="STMicroelectronics"
++CONFIG_USB_GADGET_VENDOR_NUM=0x0483
++CONFIG_USB_GADGET_PRODUCT_NUM=0x5720
++CONFIG_USB_GADGET_DWC2_OTG=y
++CONFIG_WDT=y
++CONFIG_WDT_STM32MP=y
++CONFIG_FAT_WRITE=y
++CONFIG_UBIFS_SILENCE_MSG=y
++# CONFIG_REGEX is not set
++CONFIG_FDT_FIXUP_PARTITIONS=y
++# CONFIG_EFI_LOADER is not set
+Index: u-boot/configs/txmp-1530_trusted_defconfig
+===================================================================
+--- /dev/null
++++ u-boot/configs/txmp-1530_trusted_defconfig
+@@ -0,0 +1,118 @@
++CONFIG_ARM=y
++CONFIG_ARCH_STM32MP=y
++CONFIG_SYS_MALLOC_F_LEN=0x3000
++CONFIG_TARGET_KARO_TXMP=y
++CONFIG_KARO_TXMP_1530=y
++CONFIG_TXMP_SPI=y
++CONFIG_DEBUG_UART=y
++CONFIG_DISTRO_DEFAULTS=y
++# CONFIG_ANDROID_BOOT_IMAGE is not set
++CONFIG_FIT=y
++CONFIG_QSPI_BOOT=y
++CONFIG_BOOTDELAY=-2
++CONFIG_LOGLEVEL=7
++# CONFIG_CONSOLE_MUX is not set
++CONFIG_VERSION_VARIABLE=y
++CONFIG_SYS_PROMPT="TXMP U-Boot > "
++# CONFIG_CMD_ELF is not set
++# CONFIG_CMD_XIMG is not set
++CONFIG_CMD_ENV_CALLBACK=y
++CONFIG_CMD_MEMINFO=y
++CONFIG_CMD_MEMTEST=y
++CONFIG_CMD_ADC=y
++CONFIG_CMD_CLK=y
++# CONFIG_CMD_FLASH is not set
++CONFIG_CMD_FUSE=y
++CONFIG_CMD_GPIO=y
++CONFIG_CMD_GPT=y
++CONFIG_CMD_I2C=y
++# CONFIG_CMD_LOADS is not set
++CONFIG_CMD_MMC=y
++CONFIG_CMD_MTD=y
++CONFIG_CMD_READ=y
++CONFIG_CMD_REMOTEPROC=y
++CONFIG_CMD_SF=y
++CONFIG_CMD_SF_TEST=y
++CONFIG_CMD_USB=y
++CONFIG_CMD_USB_MASS_STORAGE=y
++CONFIG_BOOTP_RANDOM_ID=y
++CONFIG_CMD_BMP=y
++CONFIG_CMD_BKOPS_ENABLE=y
++CONFIG_CMD_CACHE=y
++CONFIG_CMD_TIME=y
++CONFIG_CMD_TIMER=y
++CONFIG_CMD_UUID=y
++CONFIG_CMD_EXT4_WRITE=y
++CONFIG_CMD_MTDPARTS=y
++CONFIG_CMD_UBI=y
++# CONFIG_ISO_PARTITION is not set
++CONFIG_PARTITION_TYPE_GUID=y
++CONFIG_DEFAULT_DEVICE_TREE="stm32mp153a-txmp-1530"
++CONFIG_ENV_IS_IN_MMC=y
++CONFIG_STM32_ADC=y
++CONFIG_USB_FUNCTION_FASTBOOT=y
++CONFIG_FASTBOOT_BUF_ADDR=0xC0000000
++CONFIG_FASTBOOT_BUF_SIZE=0x02000000
++CONFIG_FASTBOOT_USB_DEV=1
++CONFIG_FASTBOOT_FLASH=y
++CONFIG_FASTBOOT_FLASH_MMC_DEV=0
++CONFIG_DM_HWSPINLOCK=y
++CONFIG_HWSPINLOCK_STM32=y
++CONFIG_DM_I2C=y
++CONFIG_SYS_I2C_STM32F7=y
++# CONFIG_INPUT is not set
++CONFIG_LED=y
++CONFIG_LED_GPIO=y
++CONFIG_DM_MAILBOX=y
++CONFIG_STM32_IPCC=y
++CONFIG_DM_MMC=y
++CONFIG_STM32_SDMMC2=y
++CONFIG_MTD=y
++CONFIG_MTD_DEVICE=y
++CONFIG_DM_SPI_FLASH=y
++CONFIG_SPI_FLASH=y
++CONFIG_SPI_FLASH_BAR=y
++CONFIG_SPI_FLASH_GIGADEVICE=y
++# CONFIG_SPI_FLASH_USE_4K_SECTORS is not set
++CONFIG_SPI_FLASH_MTD=y
++CONFIG_CONFIG_UBI_SILENCE_MSG=y
++CONFIG_DM_ETH=y
++CONFIG_DWC_ETH_QOS=y
++CONFIG_PHY=y
++CONFIG_PHY_STM32_USBPHYC=y
++CONFIG_PINCONF=y
++CONFIG_DM_PMIC=y
++# CONFIG_SPL_PMIC_CHILDREN is not set
++CONFIG_PMIC_STPMIC1=y
++CONFIG_DM_REGULATOR_FIXED=y
++CONFIG_DM_REGULATOR_STM32_VREFBUF=y
++CONFIG_REMOTEPROC_STM32_COPRO=y
++CONFIG_DEBUG_UART_STM32=y
++CONFIG_SPI=y
++CONFIG_DM_SPI=y
++CONFIG_STM32_QSPI=y
++CONFIG_USB=y
++CONFIG_DM_USB=y
++CONFIG_USB_EHCI_HCD=y
++CONFIG_USB_EHCI_GENERIC=y
++CONFIG_USB_STORAGE=y
++CONFIG_USB_GADGET=y
++CONFIG_USB_GADGET_MANUFACTURER="STMicroelectronics"
++CONFIG_USB_GADGET_VENDOR_NUM=0x0483
++CONFIG_USB_GADGET_PRODUCT_NUM=0x5720
++CONFIG_USB_GADGET_DWC2_OTG=y
++CONFIG_DM_VIDEO=y
++CONFIG_BACKLIGHT_GPIO=y
++# CONFIG_VIDEO_ANSI is not set
++CONFIG_CONSOLE_ROTATION=y
++CONFIG_VIDEO_STM32=y
++CONFIG_VIDEO_STM32_MAX_XRES=1280
++CONFIG_VIDEO_STM32_MAX_YRES=800
++CONFIG_VIDEO_DT_SIMPLEFB=y
++CONFIG_WDT=y
++CONFIG_WDT_STM32MP=y
++CONFIG_FAT_WRITE=y
++CONFIG_UBIFS_SILENCE_MSG=y
++# CONFIG_REGEX is not set
++CONFIG_FDT_FIXUP_PARTITIONS=y
++# CONFIG_EFI_LOADER is not set
+Index: u-boot/configs/txmp-1531_defconfig
+===================================================================
+--- u-boot.orig/configs/txmp-1531_defconfig
++++ /dev/null
+@@ -1,134 +0,0 @@
+-CONFIG_ARM=y
+-CONFIG_ARCH_STM32MP=y
+-CONFIG_SYS_MALLOC_F_LEN=0x3000
+-CONFIG_SPL_MMC_SUPPORT=y
+-CONFIG_SPL=y
+-CONFIG_TARGET_KARO_TXMP=y
+-CONFIG_KARO_TXMP_1531=y
+-CONFIG_TXMP_SPI=y
+-CONFIG_SPL_FAT_SUPPORT=y
+-CONFIG_SPL_SPI_FLASH_SUPPORT=y
+-CONFIG_SPL_SPI_SUPPORT=y
+-# CONFIG_ARMV7_VIRT is not set
+-CONFIG_DEBUG_UART=y
+-CONFIG_DISTRO_DEFAULTS=y
+-# CONFIG_ANDROID_BOOT_IMAGE is not set
+-CONFIG_FIT=y
+-CONFIG_QSPI_BOOT=y
+-CONFIG_BOOTDELAY=1
+-CONFIG_LOGLEVEL=7
+-# CONFIG_CONSOLE_MUX is not set
+-CONFIG_VERSION_VARIABLE=y
+-CONFIG_SPL_DISABLE_BANNER_PRINT=y
+-# CONFIG_SPL_DISPLAY_PRINT is not set
+-CONFIG_SYS_MMCSD_RAW_MODE_U_BOOT_USE_PARTITION=y
+-CONFIG_SPL_ENV_SUPPORT=y
+-CONFIG_SPL_SAVEENV=y
+-CONFIG_SPL_EXT_SUPPORT=y
+-CONFIG_SPL_I2C_SUPPORT=y
+-CONFIG_SPL_MTD_SUPPORT=y
+-CONFIG_SYS_PROMPT="TXMP U-Boot > "
+-# CONFIG_CMD_ELF is not set
+-# CONFIG_CMD_XIMG is not set
+-CONFIG_CMD_ENV_CALLBACK=y
+-CONFIG_CMD_MEMINFO=y
+-CONFIG_CMD_MEMTEST=y
+-CONFIG_CMD_ADC=y
+-CONFIG_CMD_CLK=y
+-# CONFIG_CMD_FLASH is not set
+-CONFIG_CMD_FUSE=y
+-CONFIG_CMD_GPIO=y
+-CONFIG_CMD_GPT=y
+-CONFIG_CMD_I2C=y
+-# CONFIG_CMD_LOADS is not set
+-CONFIG_CMD_MMC=y
+-CONFIG_CMD_MTD=y
+-CONFIG_CMD_READ=y
+-CONFIG_CMD_REMOTEPROC=y
+-CONFIG_CMD_SF=y
+-CONFIG_CMD_SF_TEST=y
+-CONFIG_CMD_USB=y
+-CONFIG_CMD_USB_MASS_STORAGE=y
+-CONFIG_BOOTP_RANDOM_ID=y
+-CONFIG_CMD_BMP=y
+-CONFIG_CMD_BKOPS_ENABLE=y
+-CONFIG_CMD_CACHE=y
+-CONFIG_CMD_TIME=y
+-CONFIG_CMD_TIMER=y
+-CONFIG_CMD_UUID=y
+-CONFIG_CMD_EXT4_WRITE=y
+-CONFIG_CMD_MTDPARTS=y
+-CONFIG_CMD_UBI=y
+-# CONFIG_SPL_DOS_PARTITION is not set
+-# CONFIG_ISO_PARTITION is not set
+-CONFIG_PARTITION_TYPE_GUID=y
+-CONFIG_DEFAULT_DEVICE_TREE="stm32mp153a-txmp-1531"
+-CONFIG_ENV_IS_IN_MMC=y
+-CONFIG_STM32_ADC=y
+-CONFIG_USB_FUNCTION_FASTBOOT=y
+-CONFIG_FASTBOOT_BUF_ADDR=0xC0000000
+-CONFIG_FASTBOOT_BUF_SIZE=0x02000000
+-CONFIG_FASTBOOT_USB_DEV=1
+-CONFIG_FASTBOOT_FLASH=y
+-CONFIG_FASTBOOT_FLASH_MMC_DEV=0
+-CONFIG_DM_HWSPINLOCK=y
+-CONFIG_HWSPINLOCK_STM32=y
+-CONFIG_DM_I2C=y
+-CONFIG_SYS_I2C_STM32F7=y
+-# CONFIG_INPUT is not set
+-CONFIG_LED=y
+-CONFIG_LED_GPIO=y
+-CONFIG_DM_MAILBOX=y
+-CONFIG_STM32_IPCC=y
+-CONFIG_DM_MMC=y
+-CONFIG_STM32_SDMMC2=y
+-CONFIG_MTD=y
+-CONFIG_MTD_DEVICE=y
+-CONFIG_DM_SPI_FLASH=y
+-CONFIG_SPI_FLASH=y
+-CONFIG_SPI_FLASH_BAR=y
+-CONFIG_SPI_FLASH_GIGADEVICE=y
+-# CONFIG_SPI_FLASH_USE_4K_SECTORS is not set
+-CONFIG_SPI_FLASH_MTD=y
+-CONFIG_CONFIG_UBI_SILENCE_MSG=y
+-CONFIG_DM_ETH=y
+-CONFIG_DWC_ETH_QOS=y
+-CONFIG_PHY=y
+-CONFIG_PHY_STM32_USBPHYC=y
+-CONFIG_PINCONF=y
+-# CONFIG_SPL_PINCTRL_FULL is not set
+-CONFIG_DM_PMIC=y
+-# CONFIG_SPL_PMIC_CHILDREN is not set
+-CONFIG_PMIC_STPMIC1=y
+-CONFIG_DM_REGULATOR_FIXED=y
+-CONFIG_DM_REGULATOR_STM32_VREFBUF=y
+-CONFIG_REMOTEPROC_STM32_COPRO=y
+-CONFIG_DEBUG_UART_STM32=y
+-CONFIG_SPI=y
+-CONFIG_DM_SPI=y
+-CONFIG_STM32_QSPI=y
+-CONFIG_USB=y
+-CONFIG_DM_USB=y
+-CONFIG_USB_EHCI_HCD=y
+-CONFIG_USB_EHCI_GENERIC=y
+-CONFIG_USB_STORAGE=y
+-CONFIG_USB_GADGET=y
+-CONFIG_USB_GADGET_MANUFACTURER="STMicroelectronics"
+-CONFIG_USB_GADGET_VENDOR_NUM=0x0483
+-CONFIG_USB_GADGET_PRODUCT_NUM=0x5720
+-CONFIG_USB_GADGET_DWC2_OTG=y
+-CONFIG_DM_VIDEO=y
+-CONFIG_BACKLIGHT_GPIO=y
+-# CONFIG_VIDEO_ANSI is not set
+-CONFIG_CONSOLE_ROTATION=y
+-CONFIG_VIDEO_STM32=y
+-CONFIG_VIDEO_STM32_MAX_XRES=1280
+-CONFIG_VIDEO_STM32_MAX_YRES=800
+-CONFIG_VIDEO_DT_SIMPLEFB=y
+-CONFIG_WDT=y
+-CONFIG_WDT_STM32MP=y
+-CONFIG_FAT_WRITE=y
+-CONFIG_UBIFS_SILENCE_MSG=y
+-# CONFIG_REGEX is not set
+-CONFIG_FDT_FIXUP_PARTITIONS=y
+-# CONFIG_EFI_LOADER is not set
+Index: u-boot/configs/txmp-1531_mfg_defconfig
+===================================================================
+--- u-boot.orig/configs/txmp-1531_mfg_defconfig
++++ /dev/null
+@@ -1,108 +0,0 @@
+-CONFIG_ARM=y
+-CONFIG_ARCH_STM32MP=y
+-CONFIG_SYS_MALLOC_F_LEN=0x3000
+-CONFIG_TARGET_KARO_TXMP=y
+-CONFIG_KARO_TXMP_1531=y
+-CONFIG_TXMP_SPI=y
+-CONFIG_KARO_UBOOT_MFG=y
+-CONFIG_DEBUG_UART=y
+-CONFIG_DISTRO_DEFAULTS=y
+-# CONFIG_ANDROID_BOOT_IMAGE is not set
+-CONFIG_FIT=y
+-CONFIG_QSPI_BOOT=y
+-CONFIG_BOOTDELAY=0
+-CONFIG_LOGLEVEL=7
+-CONFIG_VERSION_VARIABLE=y
+-CONFIG_SYS_PROMPT="TXMP U-Boot > "
+-# CONFIG_CMD_ELF is not set
+-# CONFIG_CMD_XIMG is not set
+-CONFIG_CMD_ENV_CALLBACK=y
+-CONFIG_CMD_MEMINFO=y
+-CONFIG_CMD_MEMTEST=y
+-CONFIG_CMD_ADC=y
+-CONFIG_CMD_CLK=y
+-CONFIG_CMD_DFU=y
+-# CONFIG_CMD_FLASH is not set
+-CONFIG_CMD_FUSE=y
+-CONFIG_CMD_GPIO=y
+-CONFIG_CMD_I2C=y
+-# CONFIG_CMD_LOADS is not set
+-CONFIG_CMD_MMC=y
+-CONFIG_CMD_MTD=y
+-CONFIG_CMD_READ=y
+-CONFIG_CMD_REMOTEPROC=y
+-CONFIG_CMD_SF=y
+-CONFIG_CMD_SF_TEST=y
+-CONFIG_CMD_USB=y
+-CONFIG_CMD_USB_MASS_STORAGE=y
+-CONFIG_BOOTP_RANDOM_ID=y
+-CONFIG_CMD_BKOPS_ENABLE=y
+-CONFIG_CMD_CACHE=y
+-CONFIG_CMD_TIME=y
+-CONFIG_CMD_TIMER=y
+-CONFIG_CMD_UUID=y
+-CONFIG_CMD_EXT4_WRITE=y
+-CONFIG_CMD_MTDPARTS=y
+-CONFIG_CMD_UBI=y
+-# CONFIG_ISO_PARTITION is not set
+-CONFIG_DEFAULT_DEVICE_TREE="stm32mp153a-txmp-1531"
+-CONFIG_ENV_IS_IN_MMC=y
+-CONFIG_STM32_ADC=y
+-CONFIG_USB_FUNCTION_FASTBOOT=y
+-CONFIG_FASTBOOT_BUF_ADDR=0xC0000000
+-CONFIG_FASTBOOT_BUF_SIZE=0x02000000
+-CONFIG_FASTBOOT_USB_DEV=1
+-CONFIG_FASTBOOT_FLASH=y
+-CONFIG_FASTBOOT_FLASH_MMC_DEV=0
+-CONFIG_DM_HWSPINLOCK=y
+-CONFIG_HWSPINLOCK_STM32=y
+-CONFIG_DM_I2C=y
+-CONFIG_SYS_I2C_STM32F7=y
+-# CONFIG_INPUT is not set
+-CONFIG_LED=y
+-CONFIG_LED_GPIO=y
+-CONFIG_DM_MAILBOX=y
+-CONFIG_STM32_IPCC=y
+-CONFIG_DM_MMC=y
+-CONFIG_STM32_SDMMC2=y
+-CONFIG_MTD=y
+-CONFIG_MTD_DEVICE=y
+-CONFIG_DM_SPI_FLASH=y
+-CONFIG_SPI_FLASH=y
+-CONFIG_SPI_FLASH_BAR=y
+-CONFIG_SPI_FLASH_GIGADEVICE=y
+-# CONFIG_SPI_FLASH_USE_4K_SECTORS is not set
+-CONFIG_SPI_FLASH_MTD=y
+-CONFIG_CONFIG_UBI_SILENCE_MSG=y
+-CONFIG_DM_ETH=y
+-CONFIG_DWC_ETH_QOS=y
+-CONFIG_PHY=y
+-CONFIG_PHY_STM32_USBPHYC=y
+-CONFIG_PINCONF=y
+-CONFIG_DM_PMIC=y
+-# CONFIG_SPL_PMIC_CHILDREN is not set
+-CONFIG_PMIC_STPMIC1=y
+-CONFIG_DM_REGULATOR_FIXED=y
+-CONFIG_DM_REGULATOR_STM32_VREFBUF=y
+-CONFIG_REMOTEPROC_STM32_COPRO=y
+-CONFIG_DEBUG_UART_STM32=y
+-CONFIG_SPI=y
+-CONFIG_DM_SPI=y
+-CONFIG_STM32_QSPI=y
+-CONFIG_USB=y
+-CONFIG_DM_USB=y
+-CONFIG_USB_EHCI_HCD=y
+-CONFIG_USB_EHCI_GENERIC=y
+-CONFIG_USB_STORAGE=y
+-CONFIG_USB_GADGET=y
+-CONFIG_USB_GADGET_MANUFACTURER="STMicroelectronics"
+-CONFIG_USB_GADGET_VENDOR_NUM=0x0483
+-CONFIG_USB_GADGET_PRODUCT_NUM=0x5720
+-CONFIG_USB_GADGET_DWC2_OTG=y
+-CONFIG_WDT=y
+-CONFIG_WDT_STM32MP=y
+-CONFIG_FAT_WRITE=y
+-CONFIG_UBIFS_SILENCE_MSG=y
+-# CONFIG_REGEX is not set
+-CONFIG_FDT_FIXUP_PARTITIONS=y
+-# CONFIG_EFI_LOADER is not set
+Index: u-boot/configs/txmp-1531_noenv_defconfig
+===================================================================
+--- u-boot.orig/configs/txmp-1531_noenv_defconfig
++++ /dev/null
+@@ -1,124 +0,0 @@
+-CONFIG_ARM=y
+-CONFIG_ARCH_STM32MP=y
+-CONFIG_SYS_MALLOC_F_LEN=0x3000
+-CONFIG_SPL_MMC_SUPPORT=y
+-CONFIG_SPL=y
+-CONFIG_TARGET_KARO_TXMP=y
+-CONFIG_KARO_TXMP_1531=y
+-CONFIG_TXMP_SPI=y
+-CONFIG_KARO_UBOOT_NOENV=y
+-CONFIG_SPL_FAT_SUPPORT=y
+-CONFIG_SPL_SPI_FLASH_SUPPORT=y
+-CONFIG_SPL_SPI_SUPPORT=y
+-# CONFIG_ARMV7_VIRT is not set
+-CONFIG_DEBUG_UART=y
+-CONFIG_DISTRO_DEFAULTS=y
+-# CONFIG_ANDROID_BOOT_IMAGE is not set
+-CONFIG_FIT=y
+-CONFIG_QSPI_BOOT=y
+-CONFIG_BOOTDELAY=-1
+-CONFIG_LOGLEVEL=7
+-CONFIG_VERSION_VARIABLE=y
+-CONFIG_SYS_MMCSD_RAW_MODE_U_BOOT_USE_PARTITION=y
+-CONFIG_SPL_ENV_SUPPORT=y
+-CONFIG_SPL_SAVEENV=y
+-CONFIG_SPL_EXT_SUPPORT=y
+-CONFIG_SPL_I2C_SUPPORT=y
+-CONFIG_SPL_MTD_SUPPORT=y
+-CONFIG_SYS_PROMPT="TXMP U-Boot > "
+-# CONFIG_CMD_ELF is not set
+-# CONFIG_CMD_XIMG is not set
+-CONFIG_CMD_ENV_CALLBACK=y
+-CONFIG_CMD_MEMINFO=y
+-CONFIG_CMD_MEMTEST=y
+-CONFIG_CMD_ADC=y
+-CONFIG_CMD_CLK=y
+-# CONFIG_CMD_FLASH is not set
+-CONFIG_CMD_FUSE=y
+-CONFIG_CMD_GPIO=y
+-CONFIG_CMD_GPT=y
+-CONFIG_CMD_I2C=y
+-# CONFIG_CMD_LOADS is not set
+-CONFIG_CMD_MMC=y
+-CONFIG_CMD_MTD=y
+-CONFIG_CMD_READ=y
+-CONFIG_CMD_REMOTEPROC=y
+-CONFIG_CMD_SF=y
+-CONFIG_CMD_SF_TEST=y
+-CONFIG_CMD_USB=y
+-CONFIG_CMD_USB_MASS_STORAGE=y
+-CONFIG_BOOTP_RANDOM_ID=y
+-CONFIG_CMD_BKOPS_ENABLE=y
+-CONFIG_CMD_CACHE=y
+-CONFIG_CMD_TIME=y
+-CONFIG_CMD_TIMER=y
+-CONFIG_CMD_UUID=y
+-CONFIG_CMD_EXT4_WRITE=y
+-CONFIG_CMD_MTDPARTS=y
+-CONFIG_CMD_UBI=y
+-# CONFIG_SPL_DOS_PARTITION is not set
+-# CONFIG_ISO_PARTITION is not set
+-CONFIG_PARTITION_TYPE_GUID=y
+-CONFIG_DEFAULT_DEVICE_TREE="stm32mp153a-txmp-1531"
+-CONFIG_ENV_IS_IN_MMC=y
+-CONFIG_STM32_ADC=y
+-CONFIG_USB_FUNCTION_FASTBOOT=y
+-CONFIG_FASTBOOT_BUF_ADDR=0xC0000000
+-CONFIG_FASTBOOT_BUF_SIZE=0x02000000
+-CONFIG_FASTBOOT_USB_DEV=1
+-CONFIG_FASTBOOT_FLASH=y
+-CONFIG_FASTBOOT_FLASH_MMC_DEV=0
+-CONFIG_DM_HWSPINLOCK=y
+-CONFIG_HWSPINLOCK_STM32=y
+-CONFIG_DM_I2C=y
+-CONFIG_SYS_I2C_STM32F7=y
+-# CONFIG_INPUT is not set
+-CONFIG_LED=y
+-CONFIG_LED_GPIO=y
+-CONFIG_DM_MAILBOX=y
+-CONFIG_STM32_IPCC=y
+-CONFIG_DM_MMC=y
+-CONFIG_STM32_SDMMC2=y
+-CONFIG_MTD=y
+-CONFIG_MTD_DEVICE=y
+-CONFIG_DM_SPI_FLASH=y
+-CONFIG_SPI_FLASH=y
+-CONFIG_SPI_FLASH_BAR=y
+-CONFIG_SPI_FLASH_GIGADEVICE=y
+-# CONFIG_SPI_FLASH_USE_4K_SECTORS is not set
+-CONFIG_SPI_FLASH_MTD=y
+-CONFIG_CONFIG_UBI_SILENCE_MSG=y
+-CONFIG_DM_ETH=y
+-CONFIG_DWC_ETH_QOS=y
+-CONFIG_PHY=y
+-CONFIG_PHY_STM32_USBPHYC=y
+-CONFIG_PINCONF=y
+-# CONFIG_SPL_PINCTRL_FULL is not set
+-CONFIG_DM_PMIC=y
+-# CONFIG_SPL_PMIC_CHILDREN is not set
+-CONFIG_PMIC_STPMIC1=y
+-CONFIG_DM_REGULATOR_FIXED=y
+-CONFIG_DM_REGULATOR_STM32_VREFBUF=y
+-CONFIG_STM32MP1_DDR_INTERACTIVE=y
+-CONFIG_REMOTEPROC_STM32_COPRO=y
+-CONFIG_DEBUG_UART_STM32=y
+-CONFIG_SPI=y
+-CONFIG_DM_SPI=y
+-CONFIG_STM32_QSPI=y
+-CONFIG_USB=y
+-CONFIG_DM_USB=y
+-CONFIG_USB_EHCI_HCD=y
+-CONFIG_USB_EHCI_GENERIC=y
+-CONFIG_USB_STORAGE=y
+-CONFIG_USB_GADGET=y
+-CONFIG_USB_GADGET_MANUFACTURER="STMicroelectronics"
+-CONFIG_USB_GADGET_VENDOR_NUM=0x0483
+-CONFIG_USB_GADGET_PRODUCT_NUM=0x5720
+-CONFIG_USB_GADGET_DWC2_OTG=y
+-CONFIG_WDT=y
+-CONFIG_WDT_STM32MP=y
+-CONFIG_FAT_WRITE=y
+-CONFIG_UBIFS_SILENCE_MSG=y
+-# CONFIG_REGEX is not set
+-CONFIG_FDT_FIXUP_PARTITIONS=y
+-# CONFIG_EFI_LOADER is not set
+Index: u-boot/configs/txmp-1531_trusted_defconfig
+===================================================================
+--- u-boot.orig/configs/txmp-1531_trusted_defconfig
++++ /dev/null
+@@ -1,118 +0,0 @@
+-CONFIG_ARM=y
+-CONFIG_ARCH_STM32MP=y
+-CONFIG_SYS_MALLOC_F_LEN=0x3000
+-CONFIG_TARGET_KARO_TXMP=y
+-CONFIG_KARO_TXMP_1531=y
+-CONFIG_TXMP_SPI=y
+-CONFIG_DEBUG_UART=y
+-CONFIG_DISTRO_DEFAULTS=y
+-# CONFIG_ANDROID_BOOT_IMAGE is not set
+-CONFIG_FIT=y
+-CONFIG_QSPI_BOOT=y
+-CONFIG_BOOTDELAY=-2
+-CONFIG_LOGLEVEL=7
+-# CONFIG_CONSOLE_MUX is not set
+-CONFIG_VERSION_VARIABLE=y
+-CONFIG_SYS_PROMPT="TXMP U-Boot > "
+-# CONFIG_CMD_ELF is not set
+-# CONFIG_CMD_XIMG is not set
+-CONFIG_CMD_ENV_CALLBACK=y
+-CONFIG_CMD_MEMINFO=y
+-CONFIG_CMD_MEMTEST=y
+-CONFIG_CMD_ADC=y
+-CONFIG_CMD_CLK=y
+-# CONFIG_CMD_FLASH is not set
+-CONFIG_CMD_FUSE=y
+-CONFIG_CMD_GPIO=y
+-CONFIG_CMD_GPT=y
+-CONFIG_CMD_I2C=y
+-# CONFIG_CMD_LOADS is not set
+-CONFIG_CMD_MMC=y
+-CONFIG_CMD_MTD=y
+-CONFIG_CMD_READ=y
+-CONFIG_CMD_REMOTEPROC=y
+-CONFIG_CMD_SF=y
+-CONFIG_CMD_SF_TEST=y
+-CONFIG_CMD_USB=y
+-CONFIG_CMD_USB_MASS_STORAGE=y
+-CONFIG_BOOTP_RANDOM_ID=y
+-CONFIG_CMD_BMP=y
+-CONFIG_CMD_BKOPS_ENABLE=y
+-CONFIG_CMD_CACHE=y
+-CONFIG_CMD_TIME=y
+-CONFIG_CMD_TIMER=y
+-CONFIG_CMD_UUID=y
+-CONFIG_CMD_EXT4_WRITE=y
+-CONFIG_CMD_MTDPARTS=y
+-CONFIG_CMD_UBI=y
+-# CONFIG_ISO_PARTITION is not set
+-CONFIG_PARTITION_TYPE_GUID=y
+-CONFIG_DEFAULT_DEVICE_TREE="stm32mp153a-txmp-1531"
+-CONFIG_ENV_IS_IN_MMC=y
+-CONFIG_STM32_ADC=y
+-CONFIG_USB_FUNCTION_FASTBOOT=y
+-CONFIG_FASTBOOT_BUF_ADDR=0xC0000000
+-CONFIG_FASTBOOT_BUF_SIZE=0x02000000
+-CONFIG_FASTBOOT_USB_DEV=1
+-CONFIG_FASTBOOT_FLASH=y
+-CONFIG_FASTBOOT_FLASH_MMC_DEV=0
+-CONFIG_DM_HWSPINLOCK=y
+-CONFIG_HWSPINLOCK_STM32=y
+-CONFIG_DM_I2C=y
+-CONFIG_SYS_I2C_STM32F7=y
+-# CONFIG_INPUT is not set
+-CONFIG_LED=y
+-CONFIG_LED_GPIO=y
+-CONFIG_DM_MAILBOX=y
+-CONFIG_STM32_IPCC=y
+-CONFIG_DM_MMC=y
+-CONFIG_STM32_SDMMC2=y
+-CONFIG_MTD=y
+-CONFIG_MTD_DEVICE=y
+-CONFIG_DM_SPI_FLASH=y
+-CONFIG_SPI_FLASH=y
+-CONFIG_SPI_FLASH_BAR=y
+-CONFIG_SPI_FLASH_GIGADEVICE=y
+-# CONFIG_SPI_FLASH_USE_4K_SECTORS is not set
+-CONFIG_SPI_FLASH_MTD=y
+-CONFIG_CONFIG_UBI_SILENCE_MSG=y
+-CONFIG_DM_ETH=y
+-CONFIG_DWC_ETH_QOS=y
+-CONFIG_PHY=y
+-CONFIG_PHY_STM32_USBPHYC=y
+-CONFIG_PINCONF=y
+-CONFIG_DM_PMIC=y
+-# CONFIG_SPL_PMIC_CHILDREN is not set
+-CONFIG_PMIC_STPMIC1=y
+-CONFIG_DM_REGULATOR_FIXED=y
+-CONFIG_DM_REGULATOR_STM32_VREFBUF=y
+-CONFIG_REMOTEPROC_STM32_COPRO=y
+-CONFIG_DEBUG_UART_STM32=y
+-CONFIG_SPI=y
+-CONFIG_DM_SPI=y
+-CONFIG_STM32_QSPI=y
+-CONFIG_USB=y
+-CONFIG_DM_USB=y
+-CONFIG_USB_EHCI_HCD=y
+-CONFIG_USB_EHCI_GENERIC=y
+-CONFIG_USB_STORAGE=y
+-CONFIG_USB_GADGET=y
+-CONFIG_USB_GADGET_MANUFACTURER="STMicroelectronics"
+-CONFIG_USB_GADGET_VENDOR_NUM=0x0483
+-CONFIG_USB_GADGET_PRODUCT_NUM=0x5720
+-CONFIG_USB_GADGET_DWC2_OTG=y
+-CONFIG_DM_VIDEO=y
+-CONFIG_BACKLIGHT_GPIO=y
+-# CONFIG_VIDEO_ANSI is not set
+-CONFIG_CONSOLE_ROTATION=y
+-CONFIG_VIDEO_STM32=y
+-CONFIG_VIDEO_STM32_MAX_XRES=1280
+-CONFIG_VIDEO_STM32_MAX_YRES=800
+-CONFIG_VIDEO_DT_SIMPLEFB=y
+-CONFIG_WDT=y
+-CONFIG_WDT_STM32MP=y
+-CONFIG_FAT_WRITE=y
+-CONFIG_UBIFS_SILENCE_MSG=y
+-# CONFIG_REGEX is not set
+-CONFIG_FDT_FIXUP_PARTITIONS=y
+-# CONFIG_EFI_LOADER is not set
+Index: u-boot/arch/arm/dts/stm32mp153a-txmp-1530.dts
+===================================================================
+--- /dev/null
++++ u-boot/arch/arm/dts/stm32mp153a-txmp-1530.dts
+@@ -0,0 +1,14 @@
++// SPDX-License-Identifier: (GPL-2.0+ OR BSD-3-Clause)
++/*
++ * Copyright (C) Lothar Waßmann <LW@KARO-electronics.de>
++ */
++
++/dts-v1/;
++
++#include "stm32mp153a-txmp.h"
++#include "stm32mp15-txmp.dtsi"
++
++/ {
++	model = "Ka-Ro electronics GmbH TXMP-1530 module";
++	compatible = "st,stm32mp153a-txmp-1530", "st,stm32mp153";
++};
+Index: u-boot/arch/arm/mach-stm32mp/Kconfig
+===================================================================
+--- u-boot.orig/arch/arm/mach-stm32mp/Kconfig
++++ u-boot/arch/arm/mach-stm32mp/Kconfig
+@@ -62,7 +62,7 @@ config TARGET_KARO_TXMP
+ 	bool "Support Ka-Ro TXMP modules"
+ 	select SOC_STM32MP1
+ 	help
+-		Ka-Ro electronics TXMP-1531/QSMP-1570 board support
++		Ka-Ro electronics TXMP/QSMP board support
+ 
+ config STM32MP1_RESET_HALT_WORKAROUND
+ 	bool "workaround for reset halt debug on stm32mp15x"
+Index: u-boot/board/karo/txmp/txmp.c
+===================================================================
+--- u-boot.orig/board/karo/txmp/txmp.c
++++ u-boot/board/karo/txmp/txmp.c
+@@ -4,8 +4,6 @@
+  *     based on: board/st/stmp32mp1/board.c
+  *     Copyright (C) 2018, STMicroelectronics - All Rights Reserved
+  */
+-#undef DEBUG
+-#define DEBUG
+ 
+ #include <config.h>
+ #include <common.h>
+@@ -143,8 +141,10 @@ int checkboard(void)
+ 	else
+ 		mode = "basic";
+ 
+-#if defined(CONFIG_KARO_TXMP_1531)
+-	printf("Board: TXMP-1531 in %s mode", mode);
++#if defined(CONFIG_KARO_TXMP_1530)
++	printf("Board: TXMP-1530 in %s mode", mode);
++#elif defined(CONFIG_KARO_TXMP_1570)
++	printf("Board: TXMP-1570 in %s mode", mode);
+ #elif defined(CONFIG_KARO_QSMP_1570)
+ 	printf("Board: QSMP-1570 in %s mode", mode);
+ #else
+@@ -747,7 +747,6 @@ int board_init(void)
+ {
+ 	struct udevice *dev;
+ 
+-printf("%s@%d: \n", __func__, __LINE__);
+ 	/* address of boot parameters */
+ 	gd->bd->bi_boot_params = STM32_DDR_BASE + 0x100;
+ 
+@@ -766,11 +765,10 @@ printf("%s@%d: \n", __func__, __LINE__);
+ 		printf("<CTRL-C> detected; safeboot enabled\n");
+ 	}
+ 
+-if (1) {
+ 	show_bmp_logo();
+ 	board_key_check();
+ 	txmp_setup_led();
+- }
++
+ 	board_usbotg_init();
+ 
+ 	return 0;
+@@ -802,7 +800,6 @@ static inline void txmp_set_bootdevice(v
+ 
+ int board_late_init(void)
+ {
+-printf("%s@%d: \n", __func__, __LINE__);
+ #ifdef CONFIG_ENV_VARS_UBOOT_RUNTIME_CONFIG
+ 	const void *fdt_compat;
+ 	ofnode root = ofnode_path("/");
+@@ -832,7 +829,6 @@ printf("%s@%d: \n", __func__, __LINE__);
+ 
+ void board_quiesce_devices(void)
+ {
+-printf("%s@%d: \n", __func__, __LINE__);
+ }
+ 
+ #ifdef CONFIG_SYS_MTDPARTS_RUNTIME
+Index: u-boot/include/configs/txmp.h
+===================================================================
+--- u-boot.orig/include/configs/txmp.h
++++ u-boot/include/configs/txmp.h
+@@ -91,7 +91,6 @@
+ 
+ #define CONFIG_SYS_MEMTEST_START	STM32_DDR_BASE
+ #define CONFIG_SYS_MEMTEST_END		(CONFIG_SYS_MEMTEST_START + SZ_64M)
+-#define CONFIG_SYS_MEMTEST_SCRATCH	(CONFIG_SYS_MEMTEST_END + 4)
+ 
+ /* SDMMC */
+ #define CONFIG_SYS_MMC_MAX_DEVICE	3
+@@ -155,15 +154,18 @@
+ 
+ #define FDT_ADDR_STR			"c4000000"
+ 
+-#if defined(CONFIG_KARO_TXMP_1531)
++#if defined(CONFIG_KARO_TXMP_1530)
+ #define TXMP_BASEBOARD			"mb7"
+-#define ROOTPART_UUID_STR		"0cc66cc0-5458-4d50-1531-726f6f746673"
++#define ROOTPART_UUID_STR		"0cc66cc0-5458-4d50-1530-726f6f746673"
++#elif defined(CONFIG_KARO_TXMP_1570)
++#define TXMP_BASEBOARD			"mb7"
++#define ROOTPART_UUID_STR		"0cc66cc0-5458-4d50-1570-726f6f746673"
+ #elif defined(CONFIG_KARO_QSMP_1570)
+ #define TXMP_BASEBOARD			"qsbase1"
+ #define ROOTPART_UUID_STR		"0cc66cc0-5153-4d50-1570-726f6f746673"
+ #else
+ #define TXMP_BASEBOARD			""
+-#define ROOTPART_UUID_STR		"0cc66cc0-5458-4d50-1531-726f6f746673"
++#define ROOTPART_UUID_STR		"0cc66cc0-5458-4d50-1530-726f6f746673"
+ #endif
+ 
+ #define CONFIG_PREBOOT
+Index: u-boot/arch/arm/dts/stm32mp153a-txmp-1530-u-boot.dtsi
+===================================================================
+--- /dev/null
++++ u-boot/arch/arm/dts/stm32mp153a-txmp-1530-u-boot.dtsi
+@@ -0,0 +1,112 @@
++// SPDX-License-Identifier: GPL-2.0 OR BSD-3-Clause
++/*
++ * Copyright (C) 2019: Lothar Waßmann <LW@KARO-electronics.de>
++ */
++
++#include <dt-bindings/clock/stm32mp1-clksrc.h>
++#include "stm32mp15-ddr.dtsi"
++#include "stm32mp157-u-boot.dtsi"
++
++/ {
++	config {
++		u-boot,boot-led = "Heartbeat";
++	};
++};
++
++&ddr {
++	u-boot,dm-pre-reloc;
++};
++
++&lcd_backlight {
++	u-boot,dm-pre-reloc;
++};
++
++&lcd_panel {
++	u-boot,dm-pre-reloc;
++};
++
++&ltdc {
++	u-boot,dm-pre-reloc;
++};
++
++&ltdc_pins_a {
++	u-boot,dm-pre-reloc;
++};
++
++&ltdc_pins_sleep_a {
++	u-boot,dm-pre-reloc;
++};
++
++&pinctrl {
++	u-boot,dm-pre-reloc;
++};
++
++&rcc {
++	u-boot,dm-pre-reloc;
++};
++
++&pll1 {
++	u-boot,dm-pre-reloc;
++};
++
++&pll2 {
++	u-boot,dm-pre-reloc;
++};
++
++&pll3 {
++	u-boot,dm-pre-reloc;
++};
++
++&pll4 {
++	u-boot,dm-pre-reloc;
++};
++
++&sdmmc2 {
++	u-boot,dm-spl;
++};
++
++&sdmmc2_pins_mx {
++	u-boot,dm-spl;
++
++	pins1 {
++		u-boot,dm-spl;
++	};
++
++	pins2 {
++		u-boot,dm-spl;
++	};
++};
++
++&sdmmc3 {
++	u-boot,dm-spl;
++};
++
++&sdmmc3_pins_mx {
++	u-boot,dm-spl;
++
++	pins1 {
++		u-boot,dm-spl;
++	};
++
++	pins2 {
++		u-boot,dm-spl;
++	};
++};
++
++&uart4 {
++	u-boot,dm-pre-reloc;
++};
++
++&uart4_pins_mx {
++	u-boot,dm-pre-reloc;
++
++	pins1 {
++		u-boot,dm-pre-reloc;
++	};
++
++	pins2 {
++		u-boot,dm-pre-reloc;
++		/* pull-up on rx to avoid floating level */
++		bias-pull-up;
++	};
++};
+Index: u-boot/arch/arm/dts/stm32mp153a-txmp-1531-u-boot.dtsi
+===================================================================
+--- u-boot.orig/arch/arm/dts/stm32mp153a-txmp-1531-u-boot.dtsi
++++ /dev/null
+@@ -1,112 +0,0 @@
+-// SPDX-License-Identifier: GPL-2.0 OR BSD-3-Clause
+-/*
+- * Copyright (C) 2019: Lothar Waßmann <LW@KARO-electronics.de>
+- */
+-
+-#include <dt-bindings/clock/stm32mp1-clksrc.h>
+-#include "stm32mp15-ddr.dtsi"
+-#include "stm32mp157-u-boot.dtsi"
+-
+-/ {
+-	config {
+-		u-boot,boot-led = "Heartbeat";
+-	};
+-};
+-
+-&ddr {
+-	u-boot,dm-pre-reloc;
+-};
+-
+-&lcd_backlight {
+-	u-boot,dm-pre-reloc;
+-};
+-
+-&lcd_panel {
+-	u-boot,dm-pre-reloc;
+-};
+-
+-&ltdc {
+-	u-boot,dm-pre-reloc;
+-};
+-
+-&ltdc_pins_a {
+-	u-boot,dm-pre-reloc;
+-};
+-
+-&ltdc_pins_sleep_a {
+-	u-boot,dm-pre-reloc;
+-};
+-
+-&pinctrl {
+-	u-boot,dm-pre-reloc;
+-};
+-
+-&rcc {
+-	u-boot,dm-pre-reloc;
+-};
+-
+-&pll1 {
+-	u-boot,dm-pre-reloc;
+-};
+-
+-&pll2 {
+-	u-boot,dm-pre-reloc;
+-};
+-
+-&pll3 {
+-	u-boot,dm-pre-reloc;
+-};
+-
+-&pll4 {
+-	u-boot,dm-pre-reloc;
+-};
+-
+-&sdmmc2 {
+-	u-boot,dm-spl;
+-};
+-
+-&sdmmc2_pins_mx {
+-	u-boot,dm-spl;
+-
+-	pins1 {
+-		u-boot,dm-spl;
+-	};
+-
+-	pins2 {
+-		u-boot,dm-spl;
+-	};
+-};
+-
+-&sdmmc3 {
+-	u-boot,dm-spl;
+-};
+-
+-&sdmmc3_pins_mx {
+-	u-boot,dm-spl;
+-
+-	pins1 {
+-		u-boot,dm-spl;
+-	};
+-
+-	pins2 {
+-		u-boot,dm-spl;
+-	};
+-};
+-
+-&uart4 {
+-	u-boot,dm-pre-reloc;
+-};
+-
+-&uart4_pins_mx {
+-	u-boot,dm-pre-reloc;
+-
+-	pins1 {
+-		u-boot,dm-pre-reloc;
+-	};
+-
+-	pins2 {
+-		u-boot,dm-pre-reloc;
+-		/* pull-up on rx to avoid floating level */
+-		bias-pull-up;
+-	};
+-};
+Index: u-boot/arch/arm/dts/stm32mp153a-txmp-1531.dts
+===================================================================
+--- u-boot.orig/arch/arm/dts/stm32mp153a-txmp-1531.dts
++++ /dev/null
+@@ -1,944 +0,0 @@
+-// SPDX-License-Identifier: (GPL-2.0+ OR BSD-3-Clause)
+-/*
+- * Copyright (C) STMicroelectronics 2019 - All Rights Reserved
+- * Author: STM32CubeMX code generation for STMicroelectronics.
+- */
+-
+-/dts-v1/;
+-
+-#include <dt-bindings/clock/stm32mp1-clksrc.h>
+-#include <dt-bindings/gpio/gpio.h>
+-#include "stm32mp153a-txmp.h"
+-
+-#include "stm32mp157c.dtsi"
+-#include "stm32mp157c-m4-srm.dtsi"
+-#include "stm32mp157cab-pinctrl.dtsi"
+-#include "stm32mp15-ddr.dtsi"
+-
+-/ {
+-	model = "Ka-Ro electronics GmbH TXMP-1531 module";
+-	compatible = "st,stm32mp153a-txmp-1531", "st,stm32mp153";
+-
+-	aliases {
+-		display = &lcd_panel;
+-		ethernet0 = &ethernet0;
+-		mmc0 = &sdmmc2;
+-		mmc1 = &sdmmc3;
+-		mmc2 = &sdmmc1;
+-		serial0 = &uart4;
+-		serial1 = &usart2;
+-		serial2 = &usart3;
+-		spinor0 = &flash0;
+-	};
+-
+-	chosen {
+-		#address-cells = <1>;
+-		#size-cells = <1>;
+-		ranges;
+-		stdout-path = "serial0:115200n8";
+-
+-		simplefb@cfd00000 {
+-			compatible = "simple-framebuffer";
+-			reg = <0xcfd00000 (640 * 480 * 2)>;
+-			width = <640>;
+-			height = <480>;
+-			stride = <(640 * 2)>;
+-			format = "r5g6b5";
+-			display = <&ltdc>;
+-			status = "okay";
+-		};
+-	};
+-
+-	lcd_backlight: lcd-backlight {
+-		compatible = "gpio-backlight";
+-		gpios = <&gpioa 10 GPIO_ACTIVE_LOW>;
+-		default-on;
+-	};
+-
+-	lcd_panel: panel {
+-		compatible = "simple-panel";
+-		pinctrl-names = "default", "sleep";
+-		pinctrl-0 = <&txmp_ltdc_pins>;
+-		pinctrl-1 = <&txmp_ltdc_pins_sleep>;
+-		enable-gpios = <&gpiod 15 GPIO_ACTIVE_HIGH>;
+-		reset-gpios = <&gpioe 1 GPIO_ACTIVE_HIGH>;
+-		backlight = <&lcd_backlight>;
+-		status = "okay";
+-
+-		port {
+-			panel_in: endpoint {
+-				remote-endpoint = <&ltdc_ep1_out>;
+-			};
+-		};
+-
+-		display-timings {
+-			native-mode = <&ETV570>;
+-
+-			VGA {
+-				clock-frequency = <25200000>;
+-				hactive = <640>;
+-				vactive = <480>;
+-				hback-porch = <48>;
+-				hsync-len = <96>;
+-				hfront-porch = <16>;
+-				vback-porch = <31>;
+-				vsync-len = <2>;
+-				vfront-porch = <12>;
+-				hsync-active = <0>;
+-				vsync-active = <0>;
+-				de-active = <1>;
+-				pixelclk-active = <0>;
+-			};
+-
+-			ETV570: ETV570 {
+-				u-boot,panel-name = "edt,et057090dhu";
+-				clock-frequency = <25200000>;
+-				hactive = <640>;
+-				vactive = <480>;
+-				hback-porch = <114>;
+-				hsync-len = <30>;
+-				hfront-porch = <16>;
+-				vback-porch = <32>;
+-				vsync-len = <3>;
+-				vfront-porch = <10>;
+-				hsync-active = <0>;
+-				vsync-active = <0>;
+-				de-active = <1>;
+-				pixelclk-active = <0>;
+-			};
+-
+-			ET0350 {
+-				u-boot,panel-name = "edt,et0350g0dh6";
+-				clock-frequency = <6413760>;
+-				hactive = <320>;
+-				vactive = <240>;
+-				hback-porch = <34>;
+-				hsync-len = <34>;
+-				hfront-porch = <20>;
+-				vback-porch = <15>;
+-				vsync-len = <3>;
+-				vfront-porch = <4>;
+-				hsync-active = <0>;
+-				vsync-active = <0>;
+-				de-active = <1>;
+-				pixelclk-active = <0>;
+-			};
+-
+-			ET0430 {
+-				u-boot,panel-name = "edt,et0430g0dh6";
+-				clock-frequency = <9009000>;
+-				hactive = <480>;
+-				vactive = <272>;
+-				hback-porch = <2>;
+-				hsync-len = <41>;
+-				hfront-porch = <2>;
+-				vback-porch = <2>;
+-				vsync-len = <10>;
+-				vfront-porch = <2>;
+-				hsync-active = <0>;
+-				vsync-active = <0>;
+-				de-active = <1>;
+-				pixelclk-active = <1>;
+-			};
+-
+-			ET0500 {
+-				clock-frequency = <33264000>;
+-				hactive = <800>;
+-				vactive = <480>;
+-				hback-porch = <88>;
+-				hsync-len = <128>;
+-				hfront-porch = <40>;
+-				vback-porch = <33>;
+-				vsync-len = <2>;
+-				vfront-porch = <10>;
+-				hsync-active = <0>;
+-				vsync-active = <0>;
+-				de-active = <1>;
+-				pixelclk-active = <0>;
+-			};
+-
+-			ET0700 { /* same as ET0500 */
+-				u-boot,panel-name = "edt,etm0700g0dh6";
+-				clock-frequency = <33264000>;
+-				hactive = <800>;
+-				vactive = <480>;
+-				hback-porch = <88>;
+-				hsync-len = <128>;
+-				hfront-porch = <40>;
+-				vback-porch = <33>;
+-				vsync-len = <2>;
+-				vfront-porch = <10>;
+-				hsync-active = <0>;
+-				vsync-active = <0>;
+-				de-active = <1>;
+-				pixelclk-active = <0>;
+-			};
+-
+-			ETQ570 {
+-				clock-frequency = <6596040>;
+-				hactive = <320>;
+-				vactive = <240>;
+-				hback-porch = <38>;
+-				hsync-len = <30>;
+-				hfront-porch = <30>;
+-				vback-porch = <16>;
+-				vsync-len = <3>;
+-				vfront-porch = <4>;
+-				hsync-active = <0>;
+-				vsync-active = <0>;
+-				de-active = <1>;
+-				pixelclk-active = <0>;
+-			};
+-		};
+-	};
+-
+-	leds {
+-		compatible = "gpio-leds";
+-
+-		module_led: module-led {
+-			pinctrl-names = "default", "sleep";
+-			pinctrl-0 = <&txmp_led_pins>;
+-			pinctrl-1 = <&txmp_led_sleep_pins>;
+-			gpios = <&gpioe 4 GPIO_ACTIVE_HIGH>;
+-			label = "Heartbeat";
+-			default-state = "on";
+-			linux,default-trigger = "heartbeat";
+-		};
+-	};
+-
+-	reg_3v3: regulator-3v3 {
+-		compatible = "regulator-fixed";
+-		regulator-name = "3v3";
+-		regulator-min-microvolt = <3300000>;
+-		regulator-max-microvolt = <3300000>;
+-		regulator-always-on;
+-	};
+-
+-	reserved-memory {
+-		#address-cells = <1>;
+-		#size-cells = <1>;
+-		ranges;
+-
+-		framebuffer@cfd00000 {
+-			reg = <0xcfd00000 (640 * 480 * 4)>;
+-			no-map;
+-		};
+-	};
+-
+-	sram: sram@10050000 {
+-		compatible = "mmio-sram";
+-		reg = <0x10050000 0x10000>;
+-		#address-cells = <1>;
+-		#size-cells = <1>;
+-		ranges = <0 0x10050000 0x10000>;
+-
+-		dma_pool: dma_pool@0 {
+-			reg = <0x0 0x10000>;
+-			pool;
+-		};
+-	};
+-
+-	usb_phy_tuning: usb-phy-tuning {
+-		st,hs-dc-level = <2>;
+-		st,fs-rftime-tuning;
+-		st,hs-rftime-reduction;
+-		st,hs-current-trim = <15>;
+-		st,hs-impedance-trim = <1>;
+-		st,squelch-level = <3>;
+-		st,hs-rx-offset = <2>;
+-		st,no-lsfs-sc;
+-	};
+-};
+-
+-&adc {
+-	vdd-supply = <&reg_3v3>;
+-	vdda-supply = <&reg_3v3>;
+-	vref-supply = <&vrefbuf>;
+-	status = "disabled";
+-};
+-
+-&adc2 {
+-	status = "disabled";
+-};
+-
+-&adc_temp {
+-	status = "disabled";
+-};
+-
+-&bsec {
+-	status = "okay";
+-	secure-status = "okay";
+-};
+-
+-&dsi {
+-	status = "disabled";
+-};
+-
+-&ethernet0 {
+-	pinctrl-names = "default", "sleep";
+-	pinctrl-0 = <&ethernet0_rmii_pins>;
+-	pinctrl-1 = <&ethernet0_rmii_pins_sleep>;
+-	phy-mode = "rmii";
+-	max-speed = <100>;
+-	phy-handle = <&phy0>;
+-	phy-reset-gpios = <&gpioa 14 GPIO_ACTIVE_LOW>;
+-	clock-names = "stmmaceth", "mac-clk-tx", "mac-clk-rx",
+-		      "ethstp", "syscfg-clk", "eth-ck";
+-	clocks = <&rcc ETHMAC &rcc ETHTX &rcc ETHRX
+-		  &rcc ETHSTP &rcc SYSCFG &rcc ETHCK_K>;
+-	st,eth-ref-clk-sel;
+-	status = "okay";
+-
+-	mdio0 {
+-		#address-cells = <1>;
+-		#size-cells = <0>;
+-		compatible = "snps,dwmac-mdio";
+-
+-		phy0: ethernet-phy@0 {
+-			compatible = "ethernet-phy-ieee802.3-c22";
+-			reg = <0>;
+-			interrupt-parent = <&gpioa>;
+-			interrupts = <13 IRQ_TYPE_EDGE_FALLING>;
+-			smsc,disable-energy-detect;
+-		};
+-	};
+-};
+-
+-&iwdg2 {
+-	timeout-sec = <32>;
+-	status = "okay";
+-};
+-
+-&ltdc {
+-	status = "okay";
+-
+-	port {
+-		ltdc_ep1_out: endpoint {
+-			remote-endpoint = <&panel_in>;
+-		};
+-	};
+-};
+-
+-&m_can2 {
+-	pinctrl-names = "default", "sleep";
+-	pinctrl-0 = <&fdcan2_pins_mx>;
+-	pinctrl-1 = <&fdcan2_sleep_pins_mx>;
+-	status = "okay";
+-};
+-
+-&pwr {
+-//	pwr-supply = <&reg_3v3>;
+-};
+-
+-&qspi {
+-	pinctrl-names = "default";
+-	pinctrl-0 = <&quadspi_pins_mx>;
+-	reg = <0x58003000 0x1000>, <0x70000000 0x1000000>;
+-	status = "okay";
+-
+-	flash0: gd25q16c@0 {
+-		#address-cells = <1>;
+-		#size-cells = <1>;
+-		compatible = "gd25q16c", "spi-flash";
+-		reg = <0>;
+-		spi-rx-bus-width = <2>;
+-		spi-max-frequency = <104000000>;
+-		memory-map = <0x90000000 0x1000000>;
+-	};
+-};
+-
+-&rcc {
+-	st,csi-cal;
+-	st,hsi-cal;
+-	st,cal-sec = <60>;
+-	st,clksrc = <
+-		CLK_MPU_PLL1P
+-		CLK_AXI_PLL2P
+-		CLK_MCU_PLL3P
+-		CLK_PLL12_HSE
+-		CLK_PLL3_HSE
+-		CLK_PLL4_HSE
+-		CLK_RTC_LSI
+-		CLK_MCO1_DISABLED
+-		CLK_MCO2_DISABLED
+-	>;
+-	st,clkdiv = <
+-		1	/* MPU */
+-		0	/* AXI */
+-		0	/* MCU */
+-		1	/* APB1 */
+-		1	/* APB2 */
+-		1	/* APB3 */
+-		1	/* APB4 */
+-		2	/* APB5 */
+-		0	/* RTC */
+-		0	/* MCO1 */
+-		0	/* MCO2 */
+-	>;
+-	st,pkcs = <
+-		CLK_CKPER_HSE
+-		CLK_QSPI_ACLK
+-		CLK_ETH_PLL4P
+-		CLK_SDMMC12_HCLK6
+-		CLK_STGEN_HSI
+-		CLK_USBPHY_HSE
+-		CLK_SPI2S1_DISABLED
+-		CLK_SPI2S23_PLL4P
+-		CLK_SPI45_DISABLED
+-		CLK_SPI6_DISABLED
+-		CLK_I2C46_CSI
+-		CLK_SDMMC3_PLL4P
+-		CLK_USBO_USBPHY
+-		CLK_ADC_CKPER
+-		CLK_CEC_DISABLED
+-		CLK_I2C12_DISABLED
+-		CLK_I2C35_PCLK1
+-		CLK_UART1_DISABLED
+-		CLK_UART24_HSI
+-		CLK_UART35_HSI
+-		CLK_UART6_DISABLED
+-		CLK_UART78_HSI
+-		CLK_SPDIF_DISABLED
+-		CLK_FDCAN_HSE
+-		CLK_SAI1_DISABLED
+-		CLK_SAI2_PLL4Q
+-		CLK_SAI3_DISABLED
+-		CLK_SAI4_DISABLED
+-		CLK_LPTIM1_PLL4P
+-		CLK_LPTIM23_DISABLED
+-		CLK_LPTIM45_DISABLED
+-		CLK_RNG1_LSI
+-	>;
+-	#address-cells = <1>;
+-	#size-cells = <0>;
+-	secure-status = "okay";
+-
+-	pll1: st,pll@0 {
+-		reg = <0>;
+-		cfg = <2 80 0 1 1 1>;
+-		frac = <2048>;
+-	};
+-
+-	pll2: st,pll@1 {
+-		reg = <1>;
+-		cfg = <2 65 1 1 0 5>;
+-		frac = <5120>;
+-	};
+-
+-	pll3: st,pll@2 {
+-		reg = <2>;
+-		cfg = <1 33 1 16 36 1>;
+-		frac = <6660>;
+-	};
+-
+-	pll4: st,pll@3 {
+-		reg = <3>;
+-		cfg = <1 49 11 6 7 3>;
+-	};
+-};
+-
+-&rtc {
+-	status = "okay";
+-	secure-status = "okay";
+-};
+-
+-&sai2 {
+-	status = "okay";
+-
+-	sai2a: audio-controller@4400b004 {
+-		pinctrl-names = "default", "sleep";
+-		pinctrl-0 = <&sai2a_pins_mx>;
+-		pinctrl-1 = <&sai2a_sleep_pins_mx>;
+-		status = "okay";
+-	};
+-};
+-
+-&sdmmc2 {
+-	/* eMMC */
+-	pinctrl-names = "default", "opendrain", "sleep";
+-	pinctrl-0 = <&sdmmc2_pins_mx>;
+-	pinctrl-1 = <&sdmmc2_pins_opendrain_mx>;
+-	pinctrl-2 = <&sdmmc2_pins_sleep_mx>;
+-	bus-width = <4>;
+-	no-sd;
+-	no-sdio;
+-	st,neg-edge;
+-	non-removable;
+-	status = "okay";
+-};
+-
+-&sdmmc3 {
+-	/* SD card slot */
+-	pinctrl-names = "default", "opendrain", "sleep";
+-	pinctrl-0 = <&sdmmc3_pins_mx>;
+-	pinctrl-1 = <&sdmmc3_opendrain_pins_mx>;
+-	pinctrl-2 = <&sdmmc3_sleep_pins_mx>;
+-	cd-gpios = <&gpioc 11 GPIO_ACTIVE_LOW>;
+-	bus-width = <4>;
+-	st,neg-edge;
+-	status = "okay";
+-};
+-
+-&spi2 {
+-	pinctrl-names = "default", "sleep";
+-	pinctrl-0 = <&spi2_pins_mx>;
+-	pinctrl-1 = <&spi2_sleep_pins_mx>;
+-	status = "okay";
+-};
+-
+-&timers1 {
+-	status = "okay";
+-
+-	pwm{
+-		pinctrl-names = "default", "sleep";
+-		pinctrl-0 = <&tim1_pwm_pins_mx>;
+-		pinctrl-1 = <&tim1_pwm_sleep_pins_mx>;
+-		status = "okay";
+-	};
+-};
+-
+-&uart4 {
+-	pinctrl-names = "default";
+-	pinctrl-0 = <&uart4_pins_mx>;
+-	status = "okay";
+-};
+-
+-&usbh_ehci {
+-	phy-names = "usb";
+-	phys = <&usbphyc_port0>;
+-	status = "okay";
+-};
+-
+-&usbotg_hs {
+-	dr_mode = "peripheral";
+-	phy-names = "usb2-phy";
+-	phys = <&usbphyc_port1 0>;
+-	force-b-session-valid;
+-	hnp-srp-disable;
+-	status = "okay";
+-};
+-
+-&usbphyc {
+-	vdd3v3-supply = <&reg_3v3>;
+-	status = "okay";
+-};
+-
+-&usbphyc_port0 {
+-	st,phy-tuning = <&usb_phy_tuning>;
+-};
+-
+-&usbphyc_port1 {
+-	st,phy-tuning = <&usb_phy_tuning>;
+-};
+-
+-&vrefbuf {
+-	regulator-min-microvolt = <2500000>;
+-	regulator-max-microvolt = <2500000>;
+-	status = "disabled";
+-};
+-
+-&pinctrl {
+-	ethernet0_rmii_pins: ethernet0-rmii-pins {
+-		pins1 {
+-			pinmux = <
+-				  STM32_PINMUX('G', 8, AF2)	/* ETH_CLK */
+-				  STM32_PINMUX('C', 1, AF11)	/* ETH_MDC */
+-				  STM32_PINMUX('A', 2, AF11)	/* ETH_MDIO */
+-				  STM32_PINMUX('B', 11, AF11)	/* ETH_RMII_TX_EN */
+-				  STM32_PINMUX('G', 13, AF11)	/* ETH_RMII_TXD0 */
+-				  STM32_PINMUX('G', 14, AF11)	/* ETH_RMII_TXD1 */
+-			>;
+-			bias-disable;
+-			drive-push-pull;
+-			slew-rate = <2>;
+-		};
+-
+-		pins2 {
+-			pinmux = <
+-				  STM32_PINMUX('C', 4, AF11) /* ETH_RMII_RXD0 */
+-				  STM32_PINMUX('C', 5, AF11) /* ETH_RMII_RXD1 */
+-				  STM32_PINMUX('A', 7, AF11) /* ETH_RMII_CRS_DV */
+-			>;
+-			bias-disable;
+-		};
+-	};
+-
+-	ethernet0_rmii_pins_sleep: rmii-pins-sleep {
+-		pins1 {
+-			pinmux = <
+-				  STM32_PINMUX('G', 8, ANALOG) /* ETH_CLK */
+-				  STM32_PINMUX('G', 13, ANALOG) /* ETH_RMII_TXD0 */
+-				  STM32_PINMUX('G', 14, ANALOG) /* ETH_RMII_TXD1 */
+-				  STM32_PINMUX('B', 11, ANALOG) /* ETH_RMII_TX_EN */
+-				  STM32_PINMUX('A', 2, ANALOG) /* ETH_MDIO */
+-				  STM32_PINMUX('C', 1, ANALOG) /* ETH_MDC */
+-				  STM32_PINMUX('C', 4, ANALOG) /* ETH_RMII_RXD0 */
+-				  STM32_PINMUX('C', 5, ANALOG) /* ETH_RMII_RXD1 */
+-				  STM32_PINMUX('A', 7, ANALOG) /* ETH_RMII_CRS_DV */
+-			>;
+-		};
+-	};
+-
+-	fdcan2_pins_mx: fdcan2-pins-mx {
+-		pins1 {
+-			pinmux = <STM32_PINMUX('B', 13, AF9)>; /* FDCAN2_TX */
+-			bias-disable;
+-			drive-push-pull;
+-			slew-rate = <0>;
+-		};
+-		pins2 {
+-			pinmux = <STM32_PINMUX('B', 5, AF9)>; /* FDCAN2_RX */
+-			bias-disable;
+-		};
+-	};
+-
+-	fdcan2_sleep_pins_mx: fdcan2-sleep-pins-mx {
+-		pins {
+-			pinmux = <
+-				  STM32_PINMUX('B', 5, ANALOG) /* FDCAN2_RX */
+-				  STM32_PINMUX('B', 13, ANALOG) /* FDCAN2_TX */
+-			>;
+-		};
+-	};
+-
+-	i2c6_pins_mx: i2c6-mx {
+-		pins {
+-			pinmux = <
+-				 STM32_PINMUX('A', 11, AF2) /* I2C6_SCL */
+-				 STM32_PINMUX('A', 12, AF2) /* I2C6_SDA */
+-			>;
+-			bias-disable;
+-			drive-open-drain;
+-			slew-rate = <0>;
+-		};
+-	};
+-
+-	i2c6_sleep_pins_mx: i2c6-sleep-mx {
+-		pins {
+-			pinmux = <
+-				  STM32_PINMUX('A', 11, ANALOG) /* I2C6_SCL */
+-				  STM32_PINMUX('A', 12, ANALOG) /* I2C6_SDA */
+-			>;
+-		};
+-	};
+-
+-	quadspi_pins_mx: quadspi-pins-mx {
+-		pins1 {
+-			pinmux = <
+-				  STM32_PINMUX('B', 6, AF10)	/* QUADSPI_BK1_NCS */
+-				  STM32_PINMUX('F', 9, AF10)	/* QUADSPI_BK1_IO1 */
+-				  STM32_PINMUX('F', 8, AF10)	/* QUADSPI_BK1_IO0 */
+-			>;
+-			bias-disable;
+-			drive-push-pull;
+-			slew-rate = <1>;
+-		};
+-
+-		pins2 {
+-			pinmux = <STM32_PINMUX('F', 10, AF9)>; /* QUADSPI_CLK */
+-			bias-disable;
+-			drive-push-pull;
+-			slew-rate = <2>;
+-		};
+-	};
+-
+-	sai2a_pins_mx: sai2a-mx {
+-		pins {
+-			pinmux = <
+-				  STM32_PINMUX('D', 11, AF10) /* SAI2_SD_A */
+-				  STM32_PINMUX('D', 12, AF10) /* SAI2_FS_A */
+-				  STM32_PINMUX('D', 13, AF10) /* SAI2_SCK_A */
+-				  STM32_PINMUX('E', 0, AF10) /* SAI2_MCLK_A */
+-			>;
+-			bias-disable;
+-			drive-push-pull;
+-			slew-rate = <0>;
+-		};
+-	};
+-
+-	sai2a_sleep_pins_mx: sai2a-sleep-mx {
+-		pins {
+-			pinmux = <
+-				  STM32_PINMUX('D', 11, ANALOG) /* SAI2_SD_A */
+-				  STM32_PINMUX('D', 12, ANALOG) /* SAI2_FS_A */
+-				  STM32_PINMUX('D', 13, ANALOG) /* SAI2_SCK_A */
+-				  STM32_PINMUX('E', 0, ANALOG) /* SAI2_MCLK_A */
+-			>;
+-		};
+-	};
+-
+-	sdmmc2_pins_mx: sdmmc2-pins-mx {
+-		pins1 {
+-			pinmux = <
+-				  STM32_PINMUX('B', 3, AF9)	/* SDMMC2_D2 */
+-				  STM32_PINMUX('B', 4, AF9)	/* SDMMC2_D3 */
+-				  STM32_PINMUX('B', 14, AF9)	/* SDMMC2_D0 */
+-				  STM32_PINMUX('B', 15, AF9)	/* SDMMC2_D1 */
+-				  STM32_PINMUX('G', 6, AF10)	/* SDMMC2_CMD */
+-			>;
+-			bias-disable;
+-			drive-push-pull;
+-			slew-rate = <1>;
+-		};
+-
+-		pins2 {
+-			pinmux = <STM32_PINMUX('E', 3, AF9)>; /* SDMMC2_CK */
+-			bias-disable;
+-			drive-push-pull;
+-			slew-rate = <3>;
+-		};
+-	};
+-
+-	sdmmc2_pins_opendrain_mx: sdmmc2-pins-opendrain-mx {
+-		pins1 {
+-			pinmux = <
+-				  STM32_PINMUX('G', 6, AF10)	/* SDMMC2_CMD */
+-			>;
+-			bias-disable;
+-			drive-open-drain;
+-			slew-rate = <1>;
+-		};
+-
+-		pins2 {
+-			pinmux = <
+-				  STM32_PINMUX('B', 3, AF9)	/* SDMMC2_D2 */
+-				  STM32_PINMUX('B', 4, AF9)	/* SDMMC2_D3 */
+-				  STM32_PINMUX('B', 14, AF9)	/* SDMMC2_D0 */
+-				  STM32_PINMUX('B', 15, AF9)	/* SDMMC2_D1 */
+-			>;
+-			bias-disable;
+-			drive-push-pull;
+-			slew-rate = <1>;
+-		};
+-
+-		pins3 {
+-			pinmux = <STM32_PINMUX('E', 3, AF9)>; /* SDMMC2_CK */
+-			bias-disable;
+-			drive-push-pull;
+-			slew-rate = <3>;
+-		};
+-	};
+-
+-	sdmmc2_pins_sleep_mx: sdmmc2-pins-sleep-mx {
+-		pins {
+-			pinmux = <
+-				  STM32_PINMUX('B', 3, ANALOG)	/* SDMMC2_D2 */
+-				  STM32_PINMUX('B', 4, ANALOG)	/* SDMMC2_D3 */
+-				  STM32_PINMUX('B', 14, ANALOG)	/* SDMMC2_D0 */
+-				  STM32_PINMUX('B', 15, ANALOG)	/* SDMMC2_D1 */
+-				  STM32_PINMUX('G', 6, ANALOG)	/* SDMMC2_CMD */
+-				  STM32_PINMUX('E', 3, ANALOG)	/* SDMMC2_CK */
+-			>;
+-		};
+-	};
+-
+-	sdmmc3_pins_mx: sdmmc3-pins-mx {
+-		pins1 {
+-			pinmux = <
+-				  STM32_PINMUX('D', 0, AF10)	/* SDMMC3_CMD */
+-				  STM32_PINMUX('D', 1, AF10)	/* SDMMC3_D0 */
+-				  STM32_PINMUX('D', 4, AF10)	/* SDMMC3_D1 */
+-				  STM32_PINMUX('D', 5, AF10)	/* SDMMC3_D2 */
+-				  STM32_PINMUX('D', 7, AF10)	/* SDMMC3_D3 */
+-			>;
+-			bias-disable;
+-			drive-push-pull;
+-			slew-rate = <1>;
+-		};
+-
+-		pins2 {
+-			pinmux = <STM32_PINMUX('G', 15, AF10)>; /* SDMMC3_CK */
+-			bias-disable;
+-			drive-push-pull;
+-			slew-rate = <2>;
+-		};
+-	};
+-
+-	sdmmc3_opendrain_pins_mx: sdmmc3_opendrain-mx {
+-		pins1 {
+-			pinmux = <STM32_PINMUX('D', 0, AF10)>; /* SDMMC3_CMD */
+-			bias-disable;
+-			drive-open-drain;
+-			slew-rate = <1>;
+-		};
+-
+-		pins2 {
+-			pinmux = <
+-				  STM32_PINMUX('D', 1, AF10) /* SDMMC3_D0 */
+-				  STM32_PINMUX('D', 4, AF10) /* SDMMC3_D1 */
+-				  STM32_PINMUX('D', 5, AF10) /* SDMMC3_D2 */
+-				  STM32_PINMUX('D', 7, AF10) /* SDMMC3_D3 */
+-			>;
+-			bias-disable;
+-			drive-push-pull;
+-			slew-rate = <1>;
+-		};
+-
+-		pins3 {
+-			pinmux = <STM32_PINMUX('G', 15, AF10)>; /* SDMMC3_CK */
+-			bias-disable;
+-			drive-push-pull;
+-			slew-rate = <3>;
+-		};
+-	};
+-
+-	sdmmc3_sleep_pins_mx: sdmmc3-sleep-mx {
+-		pins {
+-			pinmux = <
+-				  STM32_PINMUX('D', 0, ANALOG) /* SDMMC3_CMD */
+-				  STM32_PINMUX('D', 1, ANALOG) /* SDMMC3_D0 */
+-				  STM32_PINMUX('D', 4, ANALOG) /* SDMMC3_D1 */
+-				  STM32_PINMUX('D', 5, ANALOG) /* SDMMC3_D2 */
+-				  STM32_PINMUX('D', 7, ANALOG) /* SDMMC3_D3 */
+-				  STM32_PINMUX('G', 15, ANALOG) /* SDMMC3_CK */
+-			>;
+-		};
+-	};
+-
+-	spi2_pins_mx: spi2-mx {
+-		pins {
+-			pinmux = <
+-				  STM32_PINMUX('B', 12, AF5) /* SPI2_NSS */
+-				  STM32_PINMUX('C', 3, AF5) /* SPI2_MOSI */
+-				  STM32_PINMUX('C', 2, AF5) /* SPI2_MISO */
+-				  STM32_PINMUX('D', 3, AF5) /* SPI2_SCK */
+-			>;
+-			bias-disable;
+-			drive-push-pull;
+-			slew-rate = <1>;
+-		};
+-	};
+-
+-	spi2_sleep_pins_mx: spi2-sleep-mx {
+-		pins {
+-			pinmux = <
+-				  STM32_PINMUX('B', 12, ANALOG) /* SPI2_NSS */
+-				  STM32_PINMUX('C', 3, ANALOG) /* SPI2_MOSI */
+-				  STM32_PINMUX('C', 2, ANALOG) /* SPI2_MISO */
+-				  STM32_PINMUX('D', 3, ANALOG) /* SPI2_SCK */
+-			>;
+-		};
+-	};
+-
+-	tim1_pwm_pins_mx: tim1-pwm-mx {
+-		pins {
+-			pinmux = <STM32_PINMUX('A', 10, AF1)>; /* TIM1_CH3 */
+-			bias-disable;
+-			drive-push-pull;
+-			slew-rate = <0>;
+-		};
+-	};
+-
+-	tim1_pwm_sleep_pins_mx: tim1-pwm-sleep-mx {
+-		pins {
+-			pinmux = <STM32_PINMUX('A', 10, ANALOG)>; /* TIM1_CH3 */
+-		};
+-	};
+-
+-	txmp_led_pins: txmp-led-pins {
+-		pins {
+-			pinmux = <
+-				  STM32_PINMUX('E', 4, GPIO)	/* module LED */
+-			>;
+-			bias-pull-up;
+-			drive-push-pull;
+-			output-low;
+-			slew-rate = <0>;
+-		};
+-	};
+-
+-	txmp_led_sleep_pins: txmp-led-sleep-pins {
+-		pins {
+-			pinmux = <
+-				  STM32_PINMUX('E', 4, ANALOG)	/* module LED */
+-			>;
+-		};
+-	};
+-
+-	txmp_ltdc_pins: txmp-lcd-pins {
+-		pins {
+-			pinmux = <
+-				  STM32_PINMUX('G',  7, AF14) /* LCD_CLK */
+-				  STM32_PINMUX('C',  6, AF14) /* LCD_HSYNC */
+-				  STM32_PINMUX('A',  4, AF14) /* LCD_VSYNC */
+-				  STM32_PINMUX('E', 13, AF14) /* LCD_DE */
+-				  /* LCD_R0 missing! */
+-				  //STM32_PINMUX('G',  9, AF14) /* LCD_R1 */
+-				  STM32_PINMUX('C', 10, AF14) /* LCD_R2 */
+-				  STM32_PINMUX('B',  0,  AF9) /* LCD_R3 */
+-				  STM32_PINMUX('A',  5, AF14) /* LCD_R4 */
+-				  STM32_PINMUX('A',  9, AF14) /* LCD_R5 */
+-				  STM32_PINMUX('B',  1,  AF9) /* LCD_R6 */
+-				  STM32_PINMUX('E', 15, AF14) /* LCD_R7 */
+-				  //STM32_PINMUX('E', 14, AF13) /* LCD_G0 */
+-				  //STM32_PINMUX('E',  6, AF14) /* LCD_G1 */
+-				  STM32_PINMUX('A',  6, AF14) /* LCD_G2 */
+-				  STM32_PINMUX('E', 11, AF14) /* LCD_G3 */
+-				  STM32_PINMUX('B', 10, AF14) /* LCD_G4 */
+-				  STM32_PINMUX('F', 11, AF14) /* LCD_G5 */
+-				  STM32_PINMUX('C',  7, AF14) /* LCD_G6 */
+-				  //STM32_PINMUX('G',  8, AF14) /* LCD_G7 */
+-				  //STM32_PINMUX('D',  9, AF14) /* LCD_B0 */
+-				  //STM32_PINMUX('G', 12, AF14) /* LCD_B1 */
+-				  STM32_PINMUX('G', 10, AF14) /* LCD_B2 */
+-				  STM32_PINMUX('D', 10, AF14) /* LCD_B3 */
+-				  STM32_PINMUX('E', 12, AF14) /* LCD_B4 */
+-				  STM32_PINMUX('A',  3, AF14) /* LCD_B5 */
+-				  STM32_PINMUX('B',  8, AF14) /* LCD_B6 */
+-				  STM32_PINMUX('D',  8, AF14) /* LCD_B7 */
+-			>;
+-			bias-disable;
+-			drive-push-pull;
+-			slew-rate = <3>;
+-		};
+-	};
+-
+-	txmp_ltdc_pins_sleep: txmp-lcd-pins-sleep {
+-		pins {
+-			pinmux = <
+-				  STM32_PINMUX('G',  7, ANALOG) /* LCD_CLK */
+-				  STM32_PINMUX('C',  6, ANALOG) /* LCD_HSYNC */
+-				  STM32_PINMUX('A',  4, ANALOG) /* LCD_VSYNC */
+-				  STM32_PINMUX('E', 13, ANALOG) /* LCD_DE */
+-				  /* LCD_R0 missing! */
+-				  //STM32_PINMUX('G',  9, ANALOG) /* LCD_R1 */
+-				  STM32_PINMUX('C', 10, ANALOG) /* LCD_R2 */
+-				  STM32_PINMUX('B',  0, ANALOG) /* LCD_R3 */
+-				  STM32_PINMUX('A',  5, ANALOG) /* LCD_R4 */
+-				  STM32_PINMUX('A',  9, ANALOG) /* LCD_R5 */
+-				  STM32_PINMUX('B',  1, ANALOG) /* LCD_R6 */
+-				  STM32_PINMUX('E', 15, ANALOG) /* LCD_R7 */
+-				  //STM32_PINMUX('E', 14, ANALOG) /* LCD_G0 */
+-				  //STM32_PINMUX('E',  6, ANALOG) /* LCD_G1 */
+-				  STM32_PINMUX('A',  6, ANALOG) /* LCD_G2 */
+-				  STM32_PINMUX('E', 11, ANALOG) /* LCD_G3 */
+-				  STM32_PINMUX('B', 10, ANALOG) /* LCD_G4 */
+-				  STM32_PINMUX('F', 11, ANALOG) /* LCD_G5 */
+-				  STM32_PINMUX('C',  7, ANALOG) /* LCD_G6 */
+-				  STM32_PINMUX('G',  8, ANALOG) /* LCD_G7 */
+-				  //STM32_PINMUX('D',  9, ANALOG) /* LCD_B0 */
+-				  //STM32_PINMUX('G', 12, ANALOG) /* LCD_B1 */
+-				  STM32_PINMUX('G', 10, ANALOG) /* LCD_B2 */
+-				  STM32_PINMUX('D', 10, ANALOG) /* LCD_B3 */
+-				  STM32_PINMUX('E', 12, ANALOG) /* LCD_B4 */
+-				  STM32_PINMUX('A',  3, ANALOG) /* LCD_B5 */
+-				  STM32_PINMUX('B',  8, ANALOG) /* LCD_B6 */
+-				  STM32_PINMUX('D',  8, ANALOG) /* LCD_B7 */
+-			>;
+-		};
+-	};
+-
+-	uart4_pins_mx: uart4-pins-mx {
+-		pins1 {
+-			pinmux = <STM32_PINMUX('B', 2, AF8)>; /* UART4_RX */
+-			bias-disable;
+-		};
+-
+-		pins2 {
+-			pinmux = <STM32_PINMUX('G', 11, AF6)>; /* UART4_TX */
+-			bias-disable;
+-			drive-push-pull;
+-			slew-rate = <0>;
+-		};
+-	};
+-};
+Index: u-boot/configs/txmp-1570_defconfig
+===================================================================
+--- /dev/null
++++ u-boot/configs/txmp-1570_defconfig
+@@ -0,0 +1,134 @@
++CONFIG_ARM=y
++CONFIG_ARCH_STM32MP=y
++CONFIG_SYS_MALLOC_F_LEN=0x3000
++CONFIG_SPL_MMC_SUPPORT=y
++CONFIG_SPL=y
++CONFIG_TARGET_KARO_TXMP=y
++CONFIG_KARO_TXMP_1570=y
++CONFIG_TXMP_SPI=y
++CONFIG_SPL_FAT_SUPPORT=y
++CONFIG_SPL_SPI_FLASH_SUPPORT=y
++CONFIG_SPL_SPI_SUPPORT=y
++# CONFIG_ARMV7_VIRT is not set
++CONFIG_DEBUG_UART=y
++CONFIG_DISTRO_DEFAULTS=y
++# CONFIG_ANDROID_BOOT_IMAGE is not set
++CONFIG_FIT=y
++CONFIG_QSPI_BOOT=y
++CONFIG_BOOTDELAY=1
++CONFIG_LOGLEVEL=7
++# CONFIG_CONSOLE_MUX is not set
++CONFIG_VERSION_VARIABLE=y
++CONFIG_SPL_DISABLE_BANNER_PRINT=y
++# CONFIG_SPL_DISPLAY_PRINT is not set
++CONFIG_SYS_MMCSD_RAW_MODE_U_BOOT_USE_PARTITION=y
++CONFIG_SPL_ENV_SUPPORT=y
++CONFIG_SPL_SAVEENV=y
++CONFIG_SPL_EXT_SUPPORT=y
++CONFIG_SPL_I2C_SUPPORT=y
++CONFIG_SPL_MTD_SUPPORT=y
++CONFIG_SYS_PROMPT="TXMP U-Boot > "
++# CONFIG_CMD_ELF is not set
++# CONFIG_CMD_XIMG is not set
++CONFIG_CMD_ENV_CALLBACK=y
++CONFIG_CMD_MEMINFO=y
++CONFIG_CMD_MEMTEST=y
++CONFIG_CMD_ADC=y
++CONFIG_CMD_CLK=y
++# CONFIG_CMD_FLASH is not set
++CONFIG_CMD_FUSE=y
++CONFIG_CMD_GPIO=y
++CONFIG_CMD_GPT=y
++CONFIG_CMD_I2C=y
++# CONFIG_CMD_LOADS is not set
++CONFIG_CMD_MMC=y
++CONFIG_CMD_MTD=y
++CONFIG_CMD_READ=y
++CONFIG_CMD_REMOTEPROC=y
++CONFIG_CMD_SF=y
++CONFIG_CMD_SF_TEST=y
++CONFIG_CMD_USB=y
++CONFIG_CMD_USB_MASS_STORAGE=y
++CONFIG_BOOTP_RANDOM_ID=y
++CONFIG_CMD_BMP=y
++CONFIG_CMD_BKOPS_ENABLE=y
++CONFIG_CMD_CACHE=y
++CONFIG_CMD_TIME=y
++CONFIG_CMD_TIMER=y
++CONFIG_CMD_UUID=y
++CONFIG_CMD_EXT4_WRITE=y
++CONFIG_CMD_MTDPARTS=y
++CONFIG_CMD_UBI=y
++# CONFIG_SPL_DOS_PARTITION is not set
++# CONFIG_ISO_PARTITION is not set
++CONFIG_PARTITION_TYPE_GUID=y
++CONFIG_DEFAULT_DEVICE_TREE="stm32mp157c-txmp-1570"
++CONFIG_ENV_IS_IN_MMC=y
++CONFIG_STM32_ADC=y
++CONFIG_USB_FUNCTION_FASTBOOT=y
++CONFIG_FASTBOOT_BUF_ADDR=0xC0000000
++CONFIG_FASTBOOT_BUF_SIZE=0x02000000
++CONFIG_FASTBOOT_USB_DEV=1
++CONFIG_FASTBOOT_FLASH=y
++CONFIG_FASTBOOT_FLASH_MMC_DEV=0
++CONFIG_DM_HWSPINLOCK=y
++CONFIG_HWSPINLOCK_STM32=y
++CONFIG_DM_I2C=y
++CONFIG_SYS_I2C_STM32F7=y
++# CONFIG_INPUT is not set
++CONFIG_LED=y
++CONFIG_LED_GPIO=y
++CONFIG_DM_MAILBOX=y
++CONFIG_STM32_IPCC=y
++CONFIG_DM_MMC=y
++CONFIG_STM32_SDMMC2=y
++CONFIG_MTD=y
++CONFIG_MTD_DEVICE=y
++CONFIG_DM_SPI_FLASH=y
++CONFIG_SPI_FLASH=y
++CONFIG_SPI_FLASH_BAR=y
++CONFIG_SPI_FLASH_GIGADEVICE=y
++# CONFIG_SPI_FLASH_USE_4K_SECTORS is not set
++CONFIG_SPI_FLASH_MTD=y
++CONFIG_CONFIG_UBI_SILENCE_MSG=y
++CONFIG_DM_ETH=y
++CONFIG_DWC_ETH_QOS=y
++CONFIG_PHY=y
++CONFIG_PHY_STM32_USBPHYC=y
++CONFIG_PINCONF=y
++# CONFIG_SPL_PINCTRL_FULL is not set
++CONFIG_DM_PMIC=y
++# CONFIG_SPL_PMIC_CHILDREN is not set
++CONFIG_PMIC_STPMIC1=y
++CONFIG_DM_REGULATOR_FIXED=y
++CONFIG_DM_REGULATOR_STM32_VREFBUF=y
++CONFIG_REMOTEPROC_STM32_COPRO=y
++CONFIG_DEBUG_UART_STM32=y
++CONFIG_SPI=y
++CONFIG_DM_SPI=y
++CONFIG_STM32_QSPI=y
++CONFIG_USB=y
++CONFIG_DM_USB=y
++CONFIG_USB_EHCI_HCD=y
++CONFIG_USB_EHCI_GENERIC=y
++CONFIG_USB_STORAGE=y
++CONFIG_USB_GADGET=y
++CONFIG_USB_GADGET_MANUFACTURER="STMicroelectronics"
++CONFIG_USB_GADGET_VENDOR_NUM=0x0483
++CONFIG_USB_GADGET_PRODUCT_NUM=0x5720
++CONFIG_USB_GADGET_DWC2_OTG=y
++CONFIG_DM_VIDEO=y
++CONFIG_BACKLIGHT_GPIO=y
++# CONFIG_VIDEO_ANSI is not set
++CONFIG_CONSOLE_ROTATION=y
++CONFIG_VIDEO_STM32=y
++CONFIG_VIDEO_STM32_MAX_XRES=1280
++CONFIG_VIDEO_STM32_MAX_YRES=800
++CONFIG_VIDEO_DT_SIMPLEFB=y
++CONFIG_WDT=y
++CONFIG_WDT_STM32MP=y
++CONFIG_FAT_WRITE=y
++CONFIG_UBIFS_SILENCE_MSG=y
++# CONFIG_REGEX is not set
++CONFIG_FDT_FIXUP_PARTITIONS=y
++# CONFIG_EFI_LOADER is not set
+Index: u-boot/configs/txmp-1570_mfg_defconfig
+===================================================================
+--- /dev/null
++++ u-boot/configs/txmp-1570_mfg_defconfig
+@@ -0,0 +1,108 @@
++CONFIG_ARM=y
++CONFIG_ARCH_STM32MP=y
++CONFIG_SYS_MALLOC_F_LEN=0x3000
++CONFIG_TARGET_KARO_TXMP=y
++CONFIG_KARO_TXMP_1570=y
++CONFIG_TXMP_SPI=y
++CONFIG_KARO_UBOOT_MFG=y
++CONFIG_DEBUG_UART=y
++CONFIG_DISTRO_DEFAULTS=y
++# CONFIG_ANDROID_BOOT_IMAGE is not set
++CONFIG_FIT=y
++CONFIG_QSPI_BOOT=y
++CONFIG_BOOTDELAY=0
++CONFIG_LOGLEVEL=7
++CONFIG_VERSION_VARIABLE=y
++CONFIG_SYS_PROMPT="TXMP U-Boot > "
++# CONFIG_CMD_ELF is not set
++# CONFIG_CMD_XIMG is not set
++CONFIG_CMD_ENV_CALLBACK=y
++CONFIG_CMD_MEMINFO=y
++CONFIG_CMD_MEMTEST=y
++CONFIG_CMD_ADC=y
++CONFIG_CMD_CLK=y
++CONFIG_CMD_DFU=y
++# CONFIG_CMD_FLASH is not set
++CONFIG_CMD_FUSE=y
++CONFIG_CMD_GPIO=y
++CONFIG_CMD_I2C=y
++# CONFIG_CMD_LOADS is not set
++CONFIG_CMD_MMC=y
++CONFIG_CMD_MTD=y
++CONFIG_CMD_READ=y
++CONFIG_CMD_REMOTEPROC=y
++CONFIG_CMD_SF=y
++CONFIG_CMD_SF_TEST=y
++CONFIG_CMD_USB=y
++CONFIG_CMD_USB_MASS_STORAGE=y
++CONFIG_BOOTP_RANDOM_ID=y
++CONFIG_CMD_BKOPS_ENABLE=y
++CONFIG_CMD_CACHE=y
++CONFIG_CMD_TIME=y
++CONFIG_CMD_TIMER=y
++CONFIG_CMD_UUID=y
++CONFIG_CMD_EXT4_WRITE=y
++CONFIG_CMD_MTDPARTS=y
++CONFIG_CMD_UBI=y
++# CONFIG_ISO_PARTITION is not set
++CONFIG_DEFAULT_DEVICE_TREE="stm32mp157c-txmp-1570"
++CONFIG_ENV_IS_IN_MMC=y
++CONFIG_STM32_ADC=y
++CONFIG_USB_FUNCTION_FASTBOOT=y
++CONFIG_FASTBOOT_BUF_ADDR=0xC0000000
++CONFIG_FASTBOOT_BUF_SIZE=0x02000000
++CONFIG_FASTBOOT_USB_DEV=1
++CONFIG_FASTBOOT_FLASH=y
++CONFIG_FASTBOOT_FLASH_MMC_DEV=0
++CONFIG_DM_HWSPINLOCK=y
++CONFIG_HWSPINLOCK_STM32=y
++CONFIG_DM_I2C=y
++CONFIG_SYS_I2C_STM32F7=y
++# CONFIG_INPUT is not set
++CONFIG_LED=y
++CONFIG_LED_GPIO=y
++CONFIG_DM_MAILBOX=y
++CONFIG_STM32_IPCC=y
++CONFIG_DM_MMC=y
++CONFIG_STM32_SDMMC2=y
++CONFIG_MTD=y
++CONFIG_MTD_DEVICE=y
++CONFIG_DM_SPI_FLASH=y
++CONFIG_SPI_FLASH=y
++CONFIG_SPI_FLASH_BAR=y
++CONFIG_SPI_FLASH_GIGADEVICE=y
++# CONFIG_SPI_FLASH_USE_4K_SECTORS is not set
++CONFIG_SPI_FLASH_MTD=y
++CONFIG_CONFIG_UBI_SILENCE_MSG=y
++CONFIG_DM_ETH=y
++CONFIG_DWC_ETH_QOS=y
++CONFIG_PHY=y
++CONFIG_PHY_STM32_USBPHYC=y
++CONFIG_PINCONF=y
++CONFIG_DM_PMIC=y
++# CONFIG_SPL_PMIC_CHILDREN is not set
++CONFIG_PMIC_STPMIC1=y
++CONFIG_DM_REGULATOR_FIXED=y
++CONFIG_DM_REGULATOR_STM32_VREFBUF=y
++CONFIG_REMOTEPROC_STM32_COPRO=y
++CONFIG_DEBUG_UART_STM32=y
++CONFIG_SPI=y
++CONFIG_DM_SPI=y
++CONFIG_STM32_QSPI=y
++CONFIG_USB=y
++CONFIG_DM_USB=y
++CONFIG_USB_EHCI_HCD=y
++CONFIG_USB_EHCI_GENERIC=y
++CONFIG_USB_STORAGE=y
++CONFIG_USB_GADGET=y
++CONFIG_USB_GADGET_MANUFACTURER="STMicroelectronics"
++CONFIG_USB_GADGET_VENDOR_NUM=0x0483
++CONFIG_USB_GADGET_PRODUCT_NUM=0x5720
++CONFIG_USB_GADGET_DWC2_OTG=y
++CONFIG_WDT=y
++CONFIG_WDT_STM32MP=y
++CONFIG_FAT_WRITE=y
++CONFIG_UBIFS_SILENCE_MSG=y
++# CONFIG_REGEX is not set
++CONFIG_FDT_FIXUP_PARTITIONS=y
++# CONFIG_EFI_LOADER is not set
+Index: u-boot/configs/txmp-1570_trusted_defconfig
+===================================================================
+--- /dev/null
++++ u-boot/configs/txmp-1570_trusted_defconfig
+@@ -0,0 +1,118 @@
++CONFIG_ARM=y
++CONFIG_ARCH_STM32MP=y
++CONFIG_SYS_MALLOC_F_LEN=0x3000
++CONFIG_TARGET_KARO_TXMP=y
++CONFIG_KARO_TXMP_1570=y
++CONFIG_TXMP_SPI=y
++CONFIG_DEBUG_UART=y
++CONFIG_DISTRO_DEFAULTS=y
++# CONFIG_ANDROID_BOOT_IMAGE is not set
++CONFIG_FIT=y
++CONFIG_QSPI_BOOT=y
++CONFIG_BOOTDELAY=-2
++CONFIG_LOGLEVEL=7
++# CONFIG_CONSOLE_MUX is not set
++CONFIG_VERSION_VARIABLE=y
++CONFIG_SYS_PROMPT="TXMP U-Boot > "
++# CONFIG_CMD_ELF is not set
++# CONFIG_CMD_XIMG is not set
++CONFIG_CMD_ENV_CALLBACK=y
++CONFIG_CMD_MEMINFO=y
++CONFIG_CMD_MEMTEST=y
++CONFIG_CMD_ADC=y
++CONFIG_CMD_CLK=y
++# CONFIG_CMD_FLASH is not set
++CONFIG_CMD_FUSE=y
++CONFIG_CMD_GPIO=y
++CONFIG_CMD_GPT=y
++CONFIG_CMD_I2C=y
++# CONFIG_CMD_LOADS is not set
++CONFIG_CMD_MMC=y
++CONFIG_CMD_MTD=y
++CONFIG_CMD_READ=y
++CONFIG_CMD_REMOTEPROC=y
++CONFIG_CMD_SF=y
++CONFIG_CMD_SF_TEST=y
++CONFIG_CMD_USB=y
++CONFIG_CMD_USB_MASS_STORAGE=y
++CONFIG_BOOTP_RANDOM_ID=y
++CONFIG_CMD_BMP=y
++CONFIG_CMD_BKOPS_ENABLE=y
++CONFIG_CMD_CACHE=y
++CONFIG_CMD_TIME=y
++CONFIG_CMD_TIMER=y
++CONFIG_CMD_UUID=y
++CONFIG_CMD_EXT4_WRITE=y
++CONFIG_CMD_MTDPARTS=y
++CONFIG_CMD_UBI=y
++# CONFIG_ISO_PARTITION is not set
++CONFIG_PARTITION_TYPE_GUID=y
++CONFIG_DEFAULT_DEVICE_TREE="stm32mp157c-txmp-1570"
++CONFIG_ENV_IS_IN_MMC=y
++CONFIG_STM32_ADC=y
++CONFIG_USB_FUNCTION_FASTBOOT=y
++CONFIG_FASTBOOT_BUF_ADDR=0xC0000000
++CONFIG_FASTBOOT_BUF_SIZE=0x02000000
++CONFIG_FASTBOOT_USB_DEV=1
++CONFIG_FASTBOOT_FLASH=y
++CONFIG_FASTBOOT_FLASH_MMC_DEV=0
++CONFIG_DM_HWSPINLOCK=y
++CONFIG_HWSPINLOCK_STM32=y
++CONFIG_DM_I2C=y
++CONFIG_SYS_I2C_STM32F7=y
++# CONFIG_INPUT is not set
++CONFIG_LED=y
++CONFIG_LED_GPIO=y
++CONFIG_DM_MAILBOX=y
++CONFIG_STM32_IPCC=y
++CONFIG_DM_MMC=y
++CONFIG_STM32_SDMMC2=y
++CONFIG_MTD=y
++CONFIG_MTD_DEVICE=y
++CONFIG_DM_SPI_FLASH=y
++CONFIG_SPI_FLASH=y
++CONFIG_SPI_FLASH_BAR=y
++CONFIG_SPI_FLASH_GIGADEVICE=y
++# CONFIG_SPI_FLASH_USE_4K_SECTORS is not set
++CONFIG_SPI_FLASH_MTD=y
++CONFIG_CONFIG_UBI_SILENCE_MSG=y
++CONFIG_DM_ETH=y
++CONFIG_DWC_ETH_QOS=y
++CONFIG_PHY=y
++CONFIG_PHY_STM32_USBPHYC=y
++CONFIG_PINCONF=y
++CONFIG_DM_PMIC=y
++# CONFIG_SPL_PMIC_CHILDREN is not set
++CONFIG_PMIC_STPMIC1=y
++CONFIG_DM_REGULATOR_FIXED=y
++CONFIG_DM_REGULATOR_STM32_VREFBUF=y
++CONFIG_REMOTEPROC_STM32_COPRO=y
++CONFIG_DEBUG_UART_STM32=y
++CONFIG_SPI=y
++CONFIG_DM_SPI=y
++CONFIG_STM32_QSPI=y
++CONFIG_USB=y
++CONFIG_DM_USB=y
++CONFIG_USB_EHCI_HCD=y
++CONFIG_USB_EHCI_GENERIC=y
++CONFIG_USB_STORAGE=y
++CONFIG_USB_GADGET=y
++CONFIG_USB_GADGET_MANUFACTURER="STMicroelectronics"
++CONFIG_USB_GADGET_VENDOR_NUM=0x0483
++CONFIG_USB_GADGET_PRODUCT_NUM=0x5720
++CONFIG_USB_GADGET_DWC2_OTG=y
++CONFIG_DM_VIDEO=y
++CONFIG_BACKLIGHT_GPIO=y
++# CONFIG_VIDEO_ANSI is not set
++CONFIG_CONSOLE_ROTATION=y
++CONFIG_VIDEO_STM32=y
++CONFIG_VIDEO_STM32_MAX_XRES=1280
++CONFIG_VIDEO_STM32_MAX_YRES=800
++CONFIG_VIDEO_DT_SIMPLEFB=y
++CONFIG_WDT=y
++CONFIG_WDT_STM32MP=y
++CONFIG_FAT_WRITE=y
++CONFIG_UBIFS_SILENCE_MSG=y
++# CONFIG_REGEX is not set
++CONFIG_FDT_FIXUP_PARTITIONS=y
++# CONFIG_EFI_LOADER is not set
+Index: u-boot/arch/arm/dts/stm32mp15-txmp.dtsi
+===================================================================
+--- /dev/null
++++ u-boot/arch/arm/dts/stm32mp15-txmp.dtsi
+@@ -0,0 +1,936 @@
++// SPDX-License-Identifier: (GPL-2.0+ OR BSD-3-Clause)
++/*
++ * Copyright (C) Lothar Waßmann <LW@KARO-electronics.de>
++ */
++
++#include "stm32mp157c.dtsi"
++#include "stm32mp157c-m4-srm.dtsi"
++#include "stm32mp157cab-pinctrl.dtsi"
++#include "stm32mp15-ddr.dtsi"
++#include <dt-bindings/clock/stm32mp1-clksrc.h>
++#include <dt-bindings/gpio/gpio.h>
++
++/ {
++	aliases {
++		display = &lcd_panel;
++		ethernet0 = &ethernet0;
++		mmc0 = &sdmmc2;
++		mmc1 = &sdmmc3;
++		mmc2 = &sdmmc1;
++		serial0 = &uart4;
++		serial1 = &usart2;
++		serial2 = &usart3;
++		spinor0 = &flash0;
++	};
++
++	chosen {
++		#address-cells = <1>;
++		#size-cells = <1>;
++		ranges;
++		stdout-path = "serial0:115200n8";
++
++		simplefb@cfd00000 {
++			compatible = "simple-framebuffer";
++			reg = <0xcfd00000 (640 * 480 * 2)>;
++			width = <640>;
++			height = <480>;
++			stride = <(640 * 2)>;
++			format = "r5g6b5";
++			display = <&ltdc>;
++			status = "okay";
++		};
++	};
++
++	lcd_backlight: lcd-backlight {
++		compatible = "gpio-backlight";
++		gpios = <&gpioa 10 GPIO_ACTIVE_LOW>;
++		default-on;
++	};
++
++	lcd_panel: panel {
++		compatible = "simple-panel";
++		pinctrl-names = "default", "sleep";
++		pinctrl-0 = <&txmp_ltdc_pins>;
++		pinctrl-1 = <&txmp_ltdc_pins_sleep>;
++		enable-gpios = <&gpiod 15 GPIO_ACTIVE_HIGH>;
++		reset-gpios = <&gpioe 1 GPIO_ACTIVE_HIGH>;
++		backlight = <&lcd_backlight>;
++		status = "okay";
++
++		port {
++			panel_in: endpoint {
++				remote-endpoint = <&ltdc_ep1_out>;
++			};
++		};
++
++		display-timings {
++			native-mode = <&ETV570>;
++
++			VGA {
++				clock-frequency = <25200000>;
++				hactive = <640>;
++				vactive = <480>;
++				hback-porch = <48>;
++				hsync-len = <96>;
++				hfront-porch = <16>;
++				vback-porch = <31>;
++				vsync-len = <2>;
++				vfront-porch = <12>;
++				hsync-active = <0>;
++				vsync-active = <0>;
++				de-active = <1>;
++				pixelclk-active = <0>;
++			};
++
++			ETV570: ETV570 {
++				u-boot,panel-name = "edt,et057090dhu";
++				clock-frequency = <25200000>;
++				hactive = <640>;
++				vactive = <480>;
++				hback-porch = <114>;
++				hsync-len = <30>;
++				hfront-porch = <16>;
++				vback-porch = <32>;
++				vsync-len = <3>;
++				vfront-porch = <10>;
++				hsync-active = <0>;
++				vsync-active = <0>;
++				de-active = <1>;
++				pixelclk-active = <0>;
++			};
++
++			ET0350 {
++				u-boot,panel-name = "edt,et0350g0dh6";
++				clock-frequency = <6413760>;
++				hactive = <320>;
++				vactive = <240>;
++				hback-porch = <34>;
++				hsync-len = <34>;
++				hfront-porch = <20>;
++				vback-porch = <15>;
++				vsync-len = <3>;
++				vfront-porch = <4>;
++				hsync-active = <0>;
++				vsync-active = <0>;
++				de-active = <1>;
++				pixelclk-active = <0>;
++			};
++
++			ET0430 {
++				u-boot,panel-name = "edt,et0430g0dh6";
++				clock-frequency = <9009000>;
++				hactive = <480>;
++				vactive = <272>;
++				hback-porch = <2>;
++				hsync-len = <41>;
++				hfront-porch = <2>;
++				vback-porch = <2>;
++				vsync-len = <10>;
++				vfront-porch = <2>;
++				hsync-active = <0>;
++				vsync-active = <0>;
++				de-active = <1>;
++				pixelclk-active = <1>;
++			};
++
++			ET0500 {
++				clock-frequency = <33264000>;
++				hactive = <800>;
++				vactive = <480>;
++				hback-porch = <88>;
++				hsync-len = <128>;
++				hfront-porch = <40>;
++				vback-porch = <33>;
++				vsync-len = <2>;
++				vfront-porch = <10>;
++				hsync-active = <0>;
++				vsync-active = <0>;
++				de-active = <1>;
++				pixelclk-active = <0>;
++			};
++
++			ET0700 { /* same as ET0500 */
++				u-boot,panel-name = "edt,etm0700g0dh6";
++				clock-frequency = <33264000>;
++				hactive = <800>;
++				vactive = <480>;
++				hback-porch = <88>;
++				hsync-len = <128>;
++				hfront-porch = <40>;
++				vback-porch = <33>;
++				vsync-len = <2>;
++				vfront-porch = <10>;
++				hsync-active = <0>;
++				vsync-active = <0>;
++				de-active = <1>;
++				pixelclk-active = <0>;
++			};
++
++			ETQ570 {
++				clock-frequency = <6596040>;
++				hactive = <320>;
++				vactive = <240>;
++				hback-porch = <38>;
++				hsync-len = <30>;
++				hfront-porch = <30>;
++				vback-porch = <16>;
++				vsync-len = <3>;
++				vfront-porch = <4>;
++				hsync-active = <0>;
++				vsync-active = <0>;
++				de-active = <1>;
++				pixelclk-active = <0>;
++			};
++		};
++	};
++
++	leds {
++		compatible = "gpio-leds";
++
++		module_led: module-led {
++			pinctrl-names = "default", "sleep";
++			pinctrl-0 = <&txmp_led_pins>;
++			pinctrl-1 = <&txmp_led_sleep_pins>;
++			gpios = <&gpioe 4 GPIO_ACTIVE_HIGH>;
++			label = "Heartbeat";
++			default-state = "on";
++			linux,default-trigger = "heartbeat";
++		};
++	};
++
++	reg_3v3: regulator-3v3 {
++		compatible = "regulator-fixed";
++		regulator-name = "3v3";
++		regulator-min-microvolt = <3300000>;
++		regulator-max-microvolt = <3300000>;
++		regulator-always-on;
++	};
++
++	reserved-memory {
++		#address-cells = <1>;
++		#size-cells = <1>;
++		ranges;
++
++		framebuffer@cfd00000 {
++			reg = <0xcfd00000 (640 * 480 * 4)>;
++			no-map;
++		};
++	};
++
++	sram: sram@10050000 {
++		compatible = "mmio-sram";
++		reg = <0x10050000 0x10000>;
++		#address-cells = <1>;
++		#size-cells = <1>;
++		ranges = <0 0x10050000 0x10000>;
++
++		dma_pool: dma_pool@0 {
++			reg = <0x0 0x10000>;
++			pool;
++		};
++	};
++
++	usb_phy_tuning: usb-phy-tuning {
++		st,hs-dc-level = <2>;
++		st,fs-rftime-tuning;
++		st,hs-rftime-reduction;
++		st,hs-current-trim = <15>;
++		st,hs-impedance-trim = <1>;
++		st,squelch-level = <3>;
++		st,hs-rx-offset = <2>;
++		st,no-lsfs-sc;
++	};
++};
++
++&adc {
++	vdd-supply = <&reg_3v3>;
++	vdda-supply = <&reg_3v3>;
++	vref-supply = <&vrefbuf>;
++	status = "disabled";
++};
++
++&adc2 {
++	status = "disabled";
++};
++
++&adc_temp {
++	status = "disabled";
++};
++
++&bsec {
++	status = "okay";
++	secure-status = "okay";
++};
++
++&dsi {
++	status = "disabled";
++};
++
++&ethernet0 {
++	pinctrl-names = "default", "sleep";
++	pinctrl-0 = <&ethernet0_rmii_pins>;
++	pinctrl-1 = <&ethernet0_rmii_pins_sleep>;
++	phy-mode = "rmii";
++	max-speed = <100>;
++	phy-handle = <&phy0>;
++	phy-reset-gpios = <&gpioa 14 GPIO_ACTIVE_LOW>;
++	clock-names = "stmmaceth", "mac-clk-tx", "mac-clk-rx",
++		      "ethstp", "syscfg-clk", "eth-ck";
++	clocks = <&rcc ETHMAC &rcc ETHTX &rcc ETHRX
++		  &rcc ETHSTP &rcc SYSCFG &rcc ETHCK_K>;
++	st,eth-ref-clk-sel;
++	status = "okay";
++
++	mdio0 {
++		#address-cells = <1>;
++		#size-cells = <0>;
++		compatible = "snps,dwmac-mdio";
++
++		phy0: ethernet-phy@0 {
++			compatible = "ethernet-phy-ieee802.3-c22";
++			reg = <0>;
++			interrupt-parent = <&gpioa>;
++			interrupts = <13 IRQ_TYPE_EDGE_FALLING>;
++			smsc,disable-energy-detect;
++		};
++	};
++};
++
++&iwdg2 {
++	timeout-sec = <32>;
++	status = "okay";
++};
++
++&ltdc {
++	status = "okay";
++
++	port {
++		ltdc_ep1_out: endpoint {
++			remote-endpoint = <&panel_in>;
++		};
++	};
++};
++
++&m_can2 {
++	pinctrl-names = "default", "sleep";
++	pinctrl-0 = <&fdcan2_pins_mx>;
++	pinctrl-1 = <&fdcan2_sleep_pins_mx>;
++	status = "okay";
++};
++
++&pwr {
++//	pwr-supply = <&reg_3v3>;
++};
++
++&qspi {
++	pinctrl-names = "default";
++	pinctrl-0 = <&quadspi_pins_mx>;
++	reg = <0x58003000 0x1000>, <0x70000000 0x1000000>;
++	status = "okay";
++
++	flash0: gd25q16c@0 {
++		#address-cells = <1>;
++		#size-cells = <1>;
++		compatible = "gd25q16c", "spi-flash";
++		reg = <0>;
++		spi-rx-bus-width = <2>;
++		spi-max-frequency = <104000000>;
++		memory-map = <0x90000000 0x1000000>;
++	};
++};
++
++&rcc {
++	st,csi-cal;
++	st,hsi-cal;
++	st,cal-sec = <60>;
++	st,clksrc = <
++		CLK_MPU_PLL1P
++		CLK_AXI_PLL2P
++		CLK_MCU_PLL3P
++		CLK_PLL12_HSE
++		CLK_PLL3_HSE
++		CLK_PLL4_HSE
++		CLK_RTC_LSI
++		CLK_MCO1_DISABLED
++		CLK_MCO2_DISABLED
++	>;
++	st,clkdiv = <
++		1	/* MPU */
++		0	/* AXI */
++		0	/* MCU */
++		1	/* APB1 */
++		1	/* APB2 */
++		1	/* APB3 */
++		1	/* APB4 */
++		2	/* APB5 */
++		0	/* RTC */
++		0	/* MCO1 */
++		0	/* MCO2 */
++	>;
++	st,pkcs = <
++		CLK_CKPER_HSE
++		CLK_QSPI_ACLK
++		CLK_ETH_PLL4P
++		CLK_SDMMC12_HCLK6
++		CLK_STGEN_HSI
++		CLK_USBPHY_HSE
++		CLK_SPI2S1_DISABLED
++		CLK_SPI2S23_PLL4P
++		CLK_SPI45_DISABLED
++		CLK_SPI6_DISABLED
++		CLK_I2C46_CSI
++		CLK_SDMMC3_PLL4P
++		CLK_USBO_USBPHY
++		CLK_ADC_CKPER
++		CLK_CEC_DISABLED
++		CLK_I2C12_DISABLED
++		CLK_I2C35_PCLK1
++		CLK_UART1_DISABLED
++		CLK_UART24_HSI
++		CLK_UART35_HSI
++		CLK_UART6_DISABLED
++		CLK_UART78_HSI
++		CLK_SPDIF_DISABLED
++		CLK_FDCAN_HSE
++		CLK_SAI1_DISABLED
++		CLK_SAI2_PLL4Q
++		CLK_SAI3_DISABLED
++		CLK_SAI4_DISABLED
++		CLK_LPTIM1_PLL4P
++		CLK_LPTIM23_DISABLED
++		CLK_LPTIM45_DISABLED
++		CLK_RNG1_LSI
++	>;
++	#address-cells = <1>;
++	#size-cells = <0>;
++	secure-status = "okay";
++
++	pll1: st,pll@0 {
++		reg = <0>;
++		cfg = <2 80 0 1 1 1>;
++		frac = <2048>;
++	};
++
++	pll2: st,pll@1 {
++		reg = <1>;
++		cfg = <2 65 1 1 0 5>;
++		frac = <5120>;
++	};
++
++	pll3: st,pll@2 {
++		reg = <2>;
++		cfg = <1 33 1 16 36 1>;
++		frac = <6660>;
++	};
++
++	pll4: st,pll@3 {
++		reg = <3>;
++		cfg = <1 49 11 6 7 3>;
++	};
++};
++
++&rtc {
++	status = "okay";
++	secure-status = "okay";
++};
++
++&sai2 {
++	status = "okay";
++
++	sai2a: audio-controller@4400b004 {
++		pinctrl-names = "default", "sleep";
++		pinctrl-0 = <&sai2a_pins_mx>;
++		pinctrl-1 = <&sai2a_sleep_pins_mx>;
++		status = "okay";
++	};
++};
++
++&sdmmc2 {
++	/* eMMC */
++	pinctrl-names = "default", "opendrain", "sleep";
++	pinctrl-0 = <&sdmmc2_pins_mx>;
++	pinctrl-1 = <&sdmmc2_pins_opendrain_mx>;
++	pinctrl-2 = <&sdmmc2_pins_sleep_mx>;
++	bus-width = <4>;
++	no-sd;
++	no-sdio;
++	st,neg-edge;
++	non-removable;
++	status = "okay";
++};
++
++&sdmmc3 {
++	/* SD card slot */
++	pinctrl-names = "default", "opendrain", "sleep";
++	pinctrl-0 = <&sdmmc3_pins_mx>;
++	pinctrl-1 = <&sdmmc3_opendrain_pins_mx>;
++	pinctrl-2 = <&sdmmc3_sleep_pins_mx>;
++	cd-gpios = <&gpioc 11 GPIO_ACTIVE_LOW>;
++	bus-width = <4>;
++	st,neg-edge;
++	status = "okay";
++};
++
++&spi2 {
++	pinctrl-names = "default", "sleep";
++	pinctrl-0 = <&spi2_pins_mx>;
++	pinctrl-1 = <&spi2_sleep_pins_mx>;
++	status = "okay";
++};
++
++&timers1 {
++	status = "okay";
++
++	pwm{
++		pinctrl-names = "default", "sleep";
++		pinctrl-0 = <&tim1_pwm_pins_mx>;
++		pinctrl-1 = <&tim1_pwm_sleep_pins_mx>;
++		status = "okay";
++	};
++};
++
++&uart4 {
++	pinctrl-names = "default";
++	pinctrl-0 = <&uart4_pins_mx>;
++	status = "okay";
++};
++
++&usbh_ehci {
++	phy-names = "usb";
++	phys = <&usbphyc_port0>;
++	status = "okay";
++};
++
++&usbotg_hs {
++	dr_mode = "peripheral";
++	phy-names = "usb2-phy";
++	phys = <&usbphyc_port1 0>;
++	force-b-session-valid;
++	hnp-srp-disable;
++	status = "okay";
++};
++
++&usbphyc {
++	vdd3v3-supply = <&reg_3v3>;
++	status = "okay";
++};
++
++&usbphyc_port0 {
++	st,phy-tuning = <&usb_phy_tuning>;
++};
++
++&usbphyc_port1 {
++	st,phy-tuning = <&usb_phy_tuning>;
++};
++
++&vrefbuf {
++	regulator-min-microvolt = <2500000>;
++	regulator-max-microvolt = <2500000>;
++	status = "disabled";
++};
++
++&pinctrl {
++	ethernet0_rmii_pins: ethernet0-rmii-pins {
++		pins1 {
++			pinmux = <
++				  STM32_PINMUX('G', 8, AF2)	/* ETH_CLK */
++				  STM32_PINMUX('C', 1, AF11)	/* ETH_MDC */
++				  STM32_PINMUX('A', 2, AF11)	/* ETH_MDIO */
++				  STM32_PINMUX('B', 11, AF11)	/* ETH_RMII_TX_EN */
++				  STM32_PINMUX('G', 13, AF11)	/* ETH_RMII_TXD0 */
++				  STM32_PINMUX('G', 14, AF11)	/* ETH_RMII_TXD1 */
++			>;
++			bias-disable;
++			drive-push-pull;
++			slew-rate = <2>;
++		};
++
++		pins2 {
++			pinmux = <
++				  STM32_PINMUX('C', 4, AF11) /* ETH_RMII_RXD0 */
++				  STM32_PINMUX('C', 5, AF11) /* ETH_RMII_RXD1 */
++				  STM32_PINMUX('A', 7, AF11) /* ETH_RMII_CRS_DV */
++			>;
++			bias-disable;
++		};
++	};
++
++	ethernet0_rmii_pins_sleep: rmii-pins-sleep {
++		pins1 {
++			pinmux = <
++				  STM32_PINMUX('G', 8, ANALOG) /* ETH_CLK */
++				  STM32_PINMUX('G', 13, ANALOG) /* ETH_RMII_TXD0 */
++				  STM32_PINMUX('G', 14, ANALOG) /* ETH_RMII_TXD1 */
++				  STM32_PINMUX('B', 11, ANALOG) /* ETH_RMII_TX_EN */
++				  STM32_PINMUX('A', 2, ANALOG) /* ETH_MDIO */
++				  STM32_PINMUX('C', 1, ANALOG) /* ETH_MDC */
++				  STM32_PINMUX('C', 4, ANALOG) /* ETH_RMII_RXD0 */
++				  STM32_PINMUX('C', 5, ANALOG) /* ETH_RMII_RXD1 */
++				  STM32_PINMUX('A', 7, ANALOG) /* ETH_RMII_CRS_DV */
++			>;
++		};
++	};
++
++	fdcan2_pins_mx: fdcan2-pins-mx {
++		pins1 {
++			pinmux = <STM32_PINMUX('B', 13, AF9)>; /* FDCAN2_TX */
++			bias-disable;
++			drive-push-pull;
++			slew-rate = <0>;
++		};
++		pins2 {
++			pinmux = <STM32_PINMUX('B', 5, AF9)>; /* FDCAN2_RX */
++			bias-disable;
++		};
++	};
++
++	fdcan2_sleep_pins_mx: fdcan2-sleep-pins-mx {
++		pins {
++			pinmux = <
++				  STM32_PINMUX('B', 5, ANALOG) /* FDCAN2_RX */
++				  STM32_PINMUX('B', 13, ANALOG) /* FDCAN2_TX */
++			>;
++		};
++	};
++
++	i2c6_pins_mx: i2c6-mx {
++		pins {
++			pinmux = <
++				 STM32_PINMUX('A', 11, AF2) /* I2C6_SCL */
++				 STM32_PINMUX('A', 12, AF2) /* I2C6_SDA */
++			>;
++			bias-disable;
++			drive-open-drain;
++			slew-rate = <0>;
++		};
++	};
++
++	i2c6_sleep_pins_mx: i2c6-sleep-mx {
++		pins {
++			pinmux = <
++				  STM32_PINMUX('A', 11, ANALOG) /* I2C6_SCL */
++				  STM32_PINMUX('A', 12, ANALOG) /* I2C6_SDA */
++			>;
++		};
++	};
++
++	quadspi_pins_mx: quadspi-pins-mx {
++		pins1 {
++			pinmux = <
++				  STM32_PINMUX('B', 6, AF10)	/* QUADSPI_BK1_NCS */
++				  STM32_PINMUX('F', 9, AF10)	/* QUADSPI_BK1_IO1 */
++				  STM32_PINMUX('F', 8, AF10)	/* QUADSPI_BK1_IO0 */
++			>;
++			bias-disable;
++			drive-push-pull;
++			slew-rate = <1>;
++		};
++
++		pins2 {
++			pinmux = <STM32_PINMUX('F', 10, AF9)>; /* QUADSPI_CLK */
++			bias-disable;
++			drive-push-pull;
++			slew-rate = <2>;
++		};
++	};
++
++	sai2a_pins_mx: sai2a-mx {
++		pins {
++			pinmux = <
++				  STM32_PINMUX('D', 11, AF10) /* SAI2_SD_A */
++				  STM32_PINMUX('D', 12, AF10) /* SAI2_FS_A */
++				  STM32_PINMUX('D', 13, AF10) /* SAI2_SCK_A */
++				  STM32_PINMUX('E', 0, AF10) /* SAI2_MCLK_A */
++			>;
++			bias-disable;
++			drive-push-pull;
++			slew-rate = <0>;
++		};
++	};
++
++	sai2a_sleep_pins_mx: sai2a-sleep-mx {
++		pins {
++			pinmux = <
++				  STM32_PINMUX('D', 11, ANALOG) /* SAI2_SD_A */
++				  STM32_PINMUX('D', 12, ANALOG) /* SAI2_FS_A */
++				  STM32_PINMUX('D', 13, ANALOG) /* SAI2_SCK_A */
++				  STM32_PINMUX('E', 0, ANALOG) /* SAI2_MCLK_A */
++			>;
++		};
++	};
++
++	sdmmc2_pins_mx: sdmmc2-pins-mx {
++		pins1 {
++			pinmux = <
++				  STM32_PINMUX('B', 3, AF9)	/* SDMMC2_D2 */
++				  STM32_PINMUX('B', 4, AF9)	/* SDMMC2_D3 */
++				  STM32_PINMUX('B', 14, AF9)	/* SDMMC2_D0 */
++				  STM32_PINMUX('B', 15, AF9)	/* SDMMC2_D1 */
++				  STM32_PINMUX('G', 6, AF10)	/* SDMMC2_CMD */
++			>;
++			bias-disable;
++			drive-push-pull;
++			slew-rate = <1>;
++		};
++
++		pins2 {
++			pinmux = <STM32_PINMUX('E', 3, AF9)>; /* SDMMC2_CK */
++			bias-disable;
++			drive-push-pull;
++			slew-rate = <3>;
++		};
++	};
++
++	sdmmc2_pins_opendrain_mx: sdmmc2-pins-opendrain-mx {
++		pins1 {
++			pinmux = <
++				  STM32_PINMUX('G', 6, AF10)	/* SDMMC2_CMD */
++			>;
++			bias-disable;
++			drive-open-drain;
++			slew-rate = <1>;
++		};
++
++		pins2 {
++			pinmux = <
++				  STM32_PINMUX('B', 3, AF9)	/* SDMMC2_D2 */
++				  STM32_PINMUX('B', 4, AF9)	/* SDMMC2_D3 */
++				  STM32_PINMUX('B', 14, AF9)	/* SDMMC2_D0 */
++				  STM32_PINMUX('B', 15, AF9)	/* SDMMC2_D1 */
++			>;
++			bias-disable;
++			drive-push-pull;
++			slew-rate = <1>;
++		};
++
++		pins3 {
++			pinmux = <STM32_PINMUX('E', 3, AF9)>; /* SDMMC2_CK */
++			bias-disable;
++			drive-push-pull;
++			slew-rate = <3>;
++		};
++	};
++
++	sdmmc2_pins_sleep_mx: sdmmc2-pins-sleep-mx {
++		pins {
++			pinmux = <
++				  STM32_PINMUX('B', 3, ANALOG)	/* SDMMC2_D2 */
++				  STM32_PINMUX('B', 4, ANALOG)	/* SDMMC2_D3 */
++				  STM32_PINMUX('B', 14, ANALOG)	/* SDMMC2_D0 */
++				  STM32_PINMUX('B', 15, ANALOG)	/* SDMMC2_D1 */
++				  STM32_PINMUX('G', 6, ANALOG)	/* SDMMC2_CMD */
++				  STM32_PINMUX('E', 3, ANALOG)	/* SDMMC2_CK */
++			>;
++		};
++	};
++
++	sdmmc3_pins_mx: sdmmc3-pins-mx {
++		pins1 {
++			pinmux = <
++				  STM32_PINMUX('D', 0, AF10)	/* SDMMC3_CMD */
++				  STM32_PINMUX('D', 1, AF10)	/* SDMMC3_D0 */
++				  STM32_PINMUX('D', 4, AF10)	/* SDMMC3_D1 */
++				  STM32_PINMUX('D', 5, AF10)	/* SDMMC3_D2 */
++				  STM32_PINMUX('D', 7, AF10)	/* SDMMC3_D3 */
++			>;
++			bias-disable;
++			drive-push-pull;
++			slew-rate = <1>;
++		};
++
++		pins2 {
++			pinmux = <STM32_PINMUX('G', 15, AF10)>; /* SDMMC3_CK */
++			bias-disable;
++			drive-push-pull;
++			slew-rate = <2>;
++		};
++	};
++
++	sdmmc3_opendrain_pins_mx: sdmmc3_opendrain-mx {
++		pins1 {
++			pinmux = <STM32_PINMUX('D', 0, AF10)>; /* SDMMC3_CMD */
++			bias-disable;
++			drive-open-drain;
++			slew-rate = <1>;
++		};
++
++		pins2 {
++			pinmux = <
++				  STM32_PINMUX('D', 1, AF10) /* SDMMC3_D0 */
++				  STM32_PINMUX('D', 4, AF10) /* SDMMC3_D1 */
++				  STM32_PINMUX('D', 5, AF10) /* SDMMC3_D2 */
++				  STM32_PINMUX('D', 7, AF10) /* SDMMC3_D3 */
++			>;
++			bias-disable;
++			drive-push-pull;
++			slew-rate = <1>;
++		};
++
++		pins3 {
++			pinmux = <STM32_PINMUX('G', 15, AF10)>; /* SDMMC3_CK */
++			bias-disable;
++			drive-push-pull;
++			slew-rate = <3>;
++		};
++	};
++
++	sdmmc3_sleep_pins_mx: sdmmc3-sleep-mx {
++		pins {
++			pinmux = <
++				  STM32_PINMUX('D', 0, ANALOG) /* SDMMC3_CMD */
++				  STM32_PINMUX('D', 1, ANALOG) /* SDMMC3_D0 */
++				  STM32_PINMUX('D', 4, ANALOG) /* SDMMC3_D1 */
++				  STM32_PINMUX('D', 5, ANALOG) /* SDMMC3_D2 */
++				  STM32_PINMUX('D', 7, ANALOG) /* SDMMC3_D3 */
++				  STM32_PINMUX('G', 15, ANALOG) /* SDMMC3_CK */
++			>;
++		};
++	};
++
++	spi2_pins_mx: spi2-mx {
++		pins {
++			pinmux = <
++				  STM32_PINMUX('B', 12, AF5) /* SPI2_NSS */
++				  STM32_PINMUX('C', 3, AF5) /* SPI2_MOSI */
++				  STM32_PINMUX('C', 2, AF5) /* SPI2_MISO */
++				  STM32_PINMUX('A', 9, AF5) /* SPI2_SCK */
++			>;
++			bias-disable;
++			drive-push-pull;
++			slew-rate = <1>;
++		};
++	};
++
++	spi2_sleep_pins_mx: spi2-sleep-mx {
++		pins {
++			pinmux = <
++				  STM32_PINMUX('B', 12, ANALOG) /* SPI2_NSS */
++				  STM32_PINMUX('C', 3, ANALOG) /* SPI2_MOSI */
++				  STM32_PINMUX('C', 2, ANALOG) /* SPI2_MISO */
++				  STM32_PINMUX('A', 9, ANALOG) /* SPI2_SCK */
++			>;
++		};
++	};
++
++	tim1_pwm_pins_mx: tim1-pwm-mx {
++		pins {
++			pinmux = <STM32_PINMUX('A', 10, AF1)>; /* TIM1_CH3 */
++			bias-disable;
++			drive-push-pull;
++			slew-rate = <0>;
++		};
++	};
++
++	tim1_pwm_sleep_pins_mx: tim1-pwm-sleep-mx {
++		pins {
++			pinmux = <STM32_PINMUX('A', 10, ANALOG)>; /* TIM1_CH3 */
++		};
++	};
++
++	txmp_led_pins: txmp-led-pins {
++		pins {
++			pinmux = <
++				  STM32_PINMUX('E', 4, GPIO)	/* module LED */
++			>;
++			bias-pull-up;
++			drive-push-pull;
++			output-low;
++			slew-rate = <0>;
++		};
++	};
++
++	txmp_led_sleep_pins: txmp-led-sleep-pins {
++		pins {
++			pinmux = <
++				  STM32_PINMUX('E', 4, ANALOG)	/* module LED */
++			>;
++		};
++	};
++
++	txmp_ltdc_pins: txmp-lcd-pins {
++		pins {
++			pinmux = <
++				  STM32_PINMUX('G',  7, AF14) /* LCD_CLK */
++				  STM32_PINMUX('C',  6, AF14) /* LCD_HSYNC */
++				  STM32_PINMUX('A',  4, AF14) /* LCD_VSYNC */
++				  STM32_PINMUX('E', 13, AF14) /* LCD_DE */
++				  /* LCD_R0 missing! */
++				  //STM32_PINMUX('G',  9, AF14) /* LCD_R1 */
++				  STM32_PINMUX('C', 10, AF14) /* LCD_R2 */
++				  STM32_PINMUX('B',  0,  AF9) /* LCD_R3 */
++				  STM32_PINMUX('A',  5, AF14) /* LCD_R4 */
++				  STM32_PINMUX('C',  0, AF14) /* LCD_R5 */
++				  STM32_PINMUX('B',  1,  AF9) /* LCD_R6 */
++				  STM32_PINMUX('E', 15, AF14) /* LCD_R7 */
++				  //STM32_PINMUX('E', 14, AF13) /* LCD_G0 */
++				  //STM32_PINMUX('E',  6, AF14) /* LCD_G1 */
++				  STM32_PINMUX('A',  6, AF14) /* LCD_G2 */
++				  STM32_PINMUX('E', 11, AF14) /* LCD_G3 */
++				  STM32_PINMUX('B', 10, AF14) /* LCD_G4 */
++				  STM32_PINMUX('F', 11, AF14) /* LCD_G5 */
++				  STM32_PINMUX('C',  7, AF14) /* LCD_G6 */
++				  STM32_PINMUX('D',  3, AF14) /* LCD_G7 */
++				  //STM32_PINMUX('D',  9, AF14) /* LCD_B0 */
++				  //STM32_PINMUX('G', 12, AF14) /* LCD_B1 */
++				  STM32_PINMUX('G', 10, AF14) /* LCD_B2 */
++				  STM32_PINMUX('D', 10, AF14) /* LCD_B3 */
++				  STM32_PINMUX('E', 12, AF14) /* LCD_B4 */
++				  STM32_PINMUX('A',  3, AF14) /* LCD_B5 */
++				  STM32_PINMUX('B',  8, AF14) /* LCD_B6 */
++				  STM32_PINMUX('D',  8, AF14) /* LCD_B7 */
++			>;
++			bias-disable;
++			drive-push-pull;
++			slew-rate = <3>;
++		};
++	};
++
++	txmp_ltdc_pins_sleep: txmp-lcd-pins-sleep {
++		pins {
++			pinmux = <
++				  STM32_PINMUX('G',  7, ANALOG) /* LCD_CLK */
++				  STM32_PINMUX('C',  6, ANALOG) /* LCD_HSYNC */
++				  STM32_PINMUX('A',  4, ANALOG) /* LCD_VSYNC */
++				  STM32_PINMUX('E', 13, ANALOG) /* LCD_DE */
++				  /* LCD_R0 missing! */
++				  //STM32_PINMUX('G',  9, ANALOG) /* LCD_R1 */
++				  STM32_PINMUX('C', 10, ANALOG) /* LCD_R2 */
++				  STM32_PINMUX('B',  0, ANALOG) /* LCD_R3 */
++				  STM32_PINMUX('A',  5, ANALOG) /* LCD_R4 */
++				  STM32_PINMUX('C',  0, ANALOG) /* LCD_R5 */
++				  STM32_PINMUX('B',  1, ANALOG) /* LCD_R6 */
++				  STM32_PINMUX('E', 15, ANALOG) /* LCD_R7 */
++				  //STM32_PINMUX('E', 14, ANALOG) /* LCD_G0 */
++				  //STM32_PINMUX('E',  6, ANALOG) /* LCD_G1 */
++				  STM32_PINMUX('A',  6, ANALOG) /* LCD_G2 */
++				  STM32_PINMUX('E', 11, ANALOG) /* LCD_G3 */
++				  STM32_PINMUX('B', 10, ANALOG) /* LCD_G4 */
++				  STM32_PINMUX('F', 11, ANALOG) /* LCD_G5 */
++				  STM32_PINMUX('C',  7, ANALOG) /* LCD_G6 */
++				  STM32_PINMUX('D',  3, ANALOG) /* LCD_G7 */
++				  //STM32_PINMUX('D',  9, ANALOG) /* LCD_B0 */
++				  //STM32_PINMUX('G', 12, ANALOG) /* LCD_B1 */
++				  STM32_PINMUX('G', 10, ANALOG) /* LCD_B2 */
++				  STM32_PINMUX('D', 10, ANALOG) /* LCD_B3 */
++				  STM32_PINMUX('E', 12, ANALOG) /* LCD_B4 */
++				  STM32_PINMUX('A',  3, ANALOG) /* LCD_B5 */
++				  STM32_PINMUX('B',  8, ANALOG) /* LCD_B6 */
++				  STM32_PINMUX('D',  8, ANALOG) /* LCD_B7 */
++			>;
++		};
++	};
++
++	uart4_pins_mx: uart4-pins-mx {
++		pins1 {
++			pinmux = <STM32_PINMUX('B', 2, AF8)>; /* UART4_RX */
++			bias-disable;
++		};
++
++		pins2 {
++			pinmux = <STM32_PINMUX('G', 11, AF6)>; /* UART4_TX */
++			bias-disable;
++			drive-push-pull;
++			slew-rate = <0>;
++		};
++	};
++};
+Index: u-boot/arch/arm/dts/stm32mp157c-txmp-1570-u-boot.dtsi
+===================================================================
+--- /dev/null
++++ u-boot/arch/arm/dts/stm32mp157c-txmp-1570-u-boot.dtsi
+@@ -0,0 +1,112 @@
++// SPDX-License-Identifier: GPL-2.0 OR BSD-3-Clause
++/*
++ * Copyright (C) 2019: Lothar Waßmann <LW@KARO-electronics.de>
++ */
++
++#include <dt-bindings/clock/stm32mp1-clksrc.h>
++#include "stm32mp15-ddr.dtsi"
++#include "stm32mp157-u-boot.dtsi"
++
++/ {
++	config {
++		u-boot,boot-led = "Heartbeat";
++	};
++};
++
++&ddr {
++	u-boot,dm-pre-reloc;
++};
++
++&lcd_backlight {
++	u-boot,dm-pre-reloc;
++};
++
++&lcd_panel {
++	u-boot,dm-pre-reloc;
++};
++
++&ltdc {
++	u-boot,dm-pre-reloc;
++};
++
++&ltdc_pins_a {
++	u-boot,dm-pre-reloc;
++};
++
++&ltdc_pins_sleep_a {
++	u-boot,dm-pre-reloc;
++};
++
++&pinctrl {
++	u-boot,dm-pre-reloc;
++};
++
++&rcc {
++	u-boot,dm-pre-reloc;
++};
++
++&pll1 {
++	u-boot,dm-pre-reloc;
++};
++
++&pll2 {
++	u-boot,dm-pre-reloc;
++};
++
++&pll3 {
++	u-boot,dm-pre-reloc;
++};
++
++&pll4 {
++	u-boot,dm-pre-reloc;
++};
++
++&sdmmc2 {
++	u-boot,dm-spl;
++};
++
++&sdmmc2_pins_mx {
++	u-boot,dm-spl;
++
++	pins1 {
++		u-boot,dm-spl;
++	};
++
++	pins2 {
++		u-boot,dm-spl;
++	};
++};
++
++&sdmmc3 {
++	u-boot,dm-spl;
++};
++
++&sdmmc3_pins_mx {
++	u-boot,dm-spl;
++
++	pins1 {
++		u-boot,dm-spl;
++	};
++
++	pins2 {
++		u-boot,dm-spl;
++	};
++};
++
++&uart4 {
++	u-boot,dm-pre-reloc;
++};
++
++&uart4_pins_mx {
++	u-boot,dm-pre-reloc;
++
++	pins1 {
++		u-boot,dm-pre-reloc;
++	};
++
++	pins2 {
++		u-boot,dm-pre-reloc;
++		/* pull-up on rx to avoid floating level */
++		bias-pull-up;
++	};
++};
+Index: u-boot/arch/arm/dts/stm32mp157c-txmp-1570.dts
+===================================================================
+--- /dev/null
++++ u-boot/arch/arm/dts/stm32mp157c-txmp-1570.dts
+@@ -0,0 +1,15 @@
++// SPDX-License-Identifier: (GPL-2.0+ OR BSD-3-Clause)
++/*
++ * Copyright (C) STMicroelectronics 2019 - All Rights Reserved
++ * Author: STM32CubeMX code generation for STMicroelectronics.
++ */
++
++/dts-v1/;
++
++#include "stm32mp157c-txmp.h"
++#include "stm32mp15-txmp.dtsi"
++
++/ {
++	model = "Ka-Ro electronics GmbH TXMP-1570 module";
++	compatible = "st,stm32mp157c-txmp-1570", "st,stm32mp157";
++};
+Index: u-boot/configs/txmp-1570_noenv_defconfig
+===================================================================
+--- /dev/null
++++ u-boot/configs/txmp-1570_noenv_defconfig
+@@ -0,0 +1,124 @@
++CONFIG_ARM=y
++CONFIG_ARCH_STM32MP=y
++CONFIG_SYS_MALLOC_F_LEN=0x3000
++CONFIG_SPL_MMC_SUPPORT=y
++CONFIG_SPL=y
++CONFIG_TARGET_KARO_TXMP=y
++CONFIG_KARO_TXMP_1570=y
++CONFIG_TXMP_SPI=y
++CONFIG_KARO_UBOOT_NOENV=y
++CONFIG_SPL_FAT_SUPPORT=y
++CONFIG_SPL_SPI_FLASH_SUPPORT=y
++CONFIG_SPL_SPI_SUPPORT=y
++# CONFIG_ARMV7_VIRT is not set
++CONFIG_DEBUG_UART=y
++CONFIG_DISTRO_DEFAULTS=y
++# CONFIG_ANDROID_BOOT_IMAGE is not set
++CONFIG_FIT=y
++CONFIG_QSPI_BOOT=y
++CONFIG_BOOTDELAY=-1
++CONFIG_LOGLEVEL=7
++CONFIG_VERSION_VARIABLE=y
++CONFIG_SYS_MMCSD_RAW_MODE_U_BOOT_USE_PARTITION=y
++CONFIG_SPL_ENV_SUPPORT=y
++CONFIG_SPL_SAVEENV=y
++CONFIG_SPL_EXT_SUPPORT=y
++CONFIG_SPL_I2C_SUPPORT=y
++CONFIG_SPL_MTD_SUPPORT=y
++CONFIG_SYS_PROMPT="TXMP U-Boot > "
++# CONFIG_CMD_ELF is not set
++# CONFIG_CMD_XIMG is not set
++CONFIG_CMD_ENV_CALLBACK=y
++CONFIG_CMD_MEMINFO=y
++CONFIG_CMD_MEMTEST=y
++CONFIG_CMD_ADC=y
++CONFIG_CMD_CLK=y
++# CONFIG_CMD_FLASH is not set
++CONFIG_CMD_FUSE=y
++CONFIG_CMD_GPIO=y
++CONFIG_CMD_GPT=y
++CONFIG_CMD_I2C=y
++# CONFIG_CMD_LOADS is not set
++CONFIG_CMD_MMC=y
++CONFIG_CMD_MTD=y
++CONFIG_CMD_READ=y
++CONFIG_CMD_REMOTEPROC=y
++CONFIG_CMD_SF=y
++CONFIG_CMD_SF_TEST=y
++CONFIG_CMD_USB=y
++CONFIG_CMD_USB_MASS_STORAGE=y
++CONFIG_BOOTP_RANDOM_ID=y
++CONFIG_CMD_BKOPS_ENABLE=y
++CONFIG_CMD_CACHE=y
++CONFIG_CMD_TIME=y
++CONFIG_CMD_TIMER=y
++CONFIG_CMD_UUID=y
++CONFIG_CMD_EXT4_WRITE=y
++CONFIG_CMD_MTDPARTS=y
++CONFIG_CMD_UBI=y
++# CONFIG_SPL_DOS_PARTITION is not set
++# CONFIG_ISO_PARTITION is not set
++CONFIG_PARTITION_TYPE_GUID=y
++CONFIG_DEFAULT_DEVICE_TREE="stm32mp157c-txmp-1570"
++CONFIG_ENV_IS_IN_MMC=y
++CONFIG_STM32_ADC=y
++CONFIG_USB_FUNCTION_FASTBOOT=y
++CONFIG_FASTBOOT_BUF_ADDR=0xC0000000
++CONFIG_FASTBOOT_BUF_SIZE=0x02000000
++CONFIG_FASTBOOT_USB_DEV=1
++CONFIG_FASTBOOT_FLASH=y
++CONFIG_FASTBOOT_FLASH_MMC_DEV=0
++CONFIG_DM_HWSPINLOCK=y
++CONFIG_HWSPINLOCK_STM32=y
++CONFIG_DM_I2C=y
++CONFIG_SYS_I2C_STM32F7=y
++# CONFIG_INPUT is not set
++CONFIG_LED=y
++CONFIG_LED_GPIO=y
++CONFIG_DM_MAILBOX=y
++CONFIG_STM32_IPCC=y
++CONFIG_DM_MMC=y
++CONFIG_STM32_SDMMC2=y
++CONFIG_MTD=y
++CONFIG_MTD_DEVICE=y
++CONFIG_DM_SPI_FLASH=y
++CONFIG_SPI_FLASH=y
++CONFIG_SPI_FLASH_BAR=y
++CONFIG_SPI_FLASH_GIGADEVICE=y
++# CONFIG_SPI_FLASH_USE_4K_SECTORS is not set
++CONFIG_SPI_FLASH_MTD=y
++CONFIG_CONFIG_UBI_SILENCE_MSG=y
++CONFIG_DM_ETH=y
++CONFIG_DWC_ETH_QOS=y
++CONFIG_PHY=y
++CONFIG_PHY_STM32_USBPHYC=y
++CONFIG_PINCONF=y
++# CONFIG_SPL_PINCTRL_FULL is not set
++CONFIG_DM_PMIC=y
++# CONFIG_SPL_PMIC_CHILDREN is not set
++CONFIG_PMIC_STPMIC1=y
++CONFIG_DM_REGULATOR_FIXED=y
++CONFIG_DM_REGULATOR_STM32_VREFBUF=y
++CONFIG_STM32MP1_DDR_INTERACTIVE=y
++CONFIG_REMOTEPROC_STM32_COPRO=y
++CONFIG_DEBUG_UART_STM32=y
++CONFIG_SPI=y
++CONFIG_DM_SPI=y
++CONFIG_STM32_QSPI=y
++CONFIG_USB=y
++CONFIG_DM_USB=y
++CONFIG_USB_EHCI_HCD=y
++CONFIG_USB_EHCI_GENERIC=y
++CONFIG_USB_STORAGE=y
++CONFIG_USB_GADGET=y
++CONFIG_USB_GADGET_MANUFACTURER="STMicroelectronics"
++CONFIG_USB_GADGET_VENDOR_NUM=0x0483
++CONFIG_USB_GADGET_PRODUCT_NUM=0x5720
++CONFIG_USB_GADGET_DWC2_OTG=y
++CONFIG_WDT=y
++CONFIG_WDT_STM32MP=y
++CONFIG_FAT_WRITE=y
++CONFIG_UBIFS_SILENCE_MSG=y
++# CONFIG_REGEX is not set
++CONFIG_FDT_FIXUP_PARTITIONS=y
++# CONFIG_EFI_LOADER is not set

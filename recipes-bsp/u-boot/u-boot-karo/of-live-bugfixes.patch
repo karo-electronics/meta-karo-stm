@@ -1,0 +1,326 @@
+Index: u-boot/drivers/net/dwc_eth_qos.c
+===================================================================
+--- u-boot.orig/drivers/net/dwc_eth_qos.c
++++ u-boot/drivers/net/dwc_eth_qos.c
+@@ -1585,11 +1585,10 @@ static int eqos_probe_resources_stm32(st
+ 	}
+ 
+ 	/* Gigabit Ethernet 125MHz clock selection. */
+-	if (ofnode_get_property(dev_ofnode(dev), "st,eth-clk-sel", NULL)) {
++	if (dev_read_prop(dev, "st,eth-clk-sel", NULL)) {
+ 		eth_clk_sel_reg = dev_read_bool(dev, "st,eth-clk-sel");
+ 	} else {
+-		if (ofnode_get_property(dev_ofnode(dev), "st,eth_clk_sel",
+-					NULL)) {
++		if (dev_read_prop(dev, "st,eth_clk_sel", NULL)) {
+ 			dev_warn(dev,
+ 				 "Deprecated property 'st,eth_clk_sel' should be changed to 'st,eth-clk-sel'\n");
+ 		}
+@@ -1597,11 +1596,10 @@ static int eqos_probe_resources_stm32(st
+ 	}
+ 
+ 	/* Ethernet 50Mhz RMII clock selection */
+-	if (ofnode_get_property(dev_ofnode(dev), "st,eth-ref-clk-sel", NULL)) {
++	if (dev_read_prop(dev, "st,eth-ref-clk-sel", NULL)) {
+ 		eth_ref_clk_sel_reg = dev_read_bool(dev, "st,eth-ref-clk-sel");
+ 	} else {
+-		if (ofnode_get_property(dev_ofnode(dev), "st,eth_ref_clk_sel",
+-					NULL)) {
++		if (dev_read_prop(dev, "st,eth_ref_clk_sel", NULL)) {
+ 			dev_warn(dev,
+ 				 "Deprecated property 'st,eth_ref_clk_sel' should be changed to 'st,eth-ref-clk-sel'\n");
+ 		}
+@@ -1671,21 +1669,22 @@ static int eqos_get_interface_stm32(stru
+ 	struct eqos_priv *eqos = dev_get_priv(dev);
+ 	const char *phy_mode;
+ 	int interface = -1;
+-	int phy_addr;
++	uint phy_handle;
++	int ret;
+ 
+ 	debug("%s(dev=%p):\n", __func__, dev);
+ 
+-	phy_mode = fdt_getprop(gd->fdt_blob, dev_of_offset(dev), "phy-mode",
+-			       NULL);
++	phy_mode = dev_read_string(dev, "phy-mode");
+ 	if (phy_mode)
+ 		interface = phy_get_interface_by_name(phy_mode);
+ 
+-	phy_addr = fdtdec_lookup_phandle(gd->fdt_blob, dev_of_offset(dev),
+-					 "phy-handle");
+-	if (phy_addr > 0)
+-		eqos->phy_addr = fdtdec_get_int(gd->fdt_blob, phy_addr,
+-						"reg", 0);
++	ret = dev_read_u32(dev, "phy-handle", &phy_handle);
++	if (ret == 0) {
++		ofnode phy_node = ofnode_get_by_phandle(phy_handle);
++		fdt_size_t sz;
+ 
++		eqos->phy_addr = ofnode_get_addr_size(phy_node, "reg", &sz);
++	}
+ 	return interface;
+ }
+ 
+@@ -1742,9 +1741,9 @@ static int eqos_probe(struct udevice *de
+ 	eqos->dev = dev;
+ 	eqos->config = (void *)dev_get_driver_data(dev);
+ 
+-	eqos->regs = devfdt_get_addr(dev);
++	eqos->regs = dev_read_addr(dev);
+ 	if (eqos->regs == FDT_ADDR_T_NONE) {
+-		pr_err("devfdt_get_addr() failed\n");
++		pr_err("dev_read_addr() failed\n");
+ 		return -ENODEV;
+ 	}
+ 	eqos->mac_regs = (void *)(eqos->regs + EQOS_MAC_REGS_BASE);
+Index: u-boot/drivers/serial/serial_stm32.c
+===================================================================
+--- u-boot.orig/drivers/serial/serial_stm32.c
++++ u-boot/drivers/serial/serial_stm32.c
+@@ -225,7 +225,7 @@ static int stm32_serial_ofdata_to_platda
+ {
+ 	struct stm32x7_serial_platdata *plat = dev_get_platdata(dev);
+ 
+-	plat->base = devfdt_get_addr(dev);
++	plat->base = dev_read_addr(dev);
+ 	if (plat->base == FDT_ADDR_T_NONE)
+ 		return -EINVAL;
+ 
+Index: u-boot/drivers/video/stm32/stm32_ltdc.c
+===================================================================
+--- u-boot.orig/drivers/video/stm32/stm32_ltdc.c
++++ u-boot/drivers/video/stm32/stm32_ltdc.c
+@@ -365,8 +365,7 @@ static int stm32_ltdc_probe(struct udevi
+ 
+ 	ret = panel_get_display_timing(panel, &timings);
+ 	if (ret) {
+-		ret = fdtdec_decode_display_timing(gd->fdt_blob,
+-						   dev_of_offset(panel),
++		ret = ofnode_decode_display_timing(dev_ofnode(panel),
+ 						   0, &timings);
+ 		if (ret) {
+ 			dev_err(dev, "decode display timing error %d\n", ret);
+Index: u-boot/drivers/usb/gadget/gen_udc_otg_phy.c
+===================================================================
+--- u-boot.orig/drivers/usb/gadget/gen_udc_otg_phy.c
++++ u-boot/drivers/usb/gadget/gen_udc_otg_phy.c
+@@ -15,10 +15,10 @@ void otg_phy_init(struct dwc2_udc *dev)
+ 	struct udevice *phy_dev;
+ 	struct phy phy;
+ 
+-	if (uclass_get_device_by_of_offset(UCLASS_PHY,
+-					   pdata->phy_of_node, &phy_dev)) {
++	if (uclass_get_device_by_ofnode(UCLASS_PHY,
++					pdata->phy_of_node, &phy_dev)) {
+ 		pr_err("USB PHY not found via '%s'\n",
+-		       fdt_get_name(gd->fdt_blob, pdata->phy_of_node, NULL));
++		       ofnode_get_name(pdata->phy_of_node));
+ 		hang();
+ 		return;
+ 	}
+@@ -47,8 +47,8 @@ void otg_phy_off(struct dwc2_udc *dev)
+ 	struct phy phy;
+ 	int ret;
+ 
+-	uclass_get_device_by_of_offset(UCLASS_PHY,
+-				       pdata->phy_of_node, &phy_dev);
++	uclass_get_device_by_ofnode(UCLASS_PHY,
++				    pdata->phy_of_node, &phy_dev);
+ 	phy.dev = phy_dev;
+ 	phy.id = pdata->regs_phy;
+ 
+Index: u-boot/drivers/firmware/psci.c
+===================================================================
+--- u-boot.orig/drivers/firmware/psci.c
++++ u-boot/drivers/firmware/psci.c
+@@ -56,11 +56,9 @@ static int psci_bind(struct udevice *dev
+ 
+ static int psci_probe(struct udevice *dev)
+ {
+-	DECLARE_GLOBAL_DATA_PTR;
+ 	const char *method;
+ 
+-	method = fdt_stringlist_get(gd->fdt_blob, dev_of_offset(dev), "method",
+-				    0, NULL);
++	method = ofnode_read_string(dev_ofnode(dev), "method");
+ 	if (!method) {
+ 		pr_warn("missing \"method\" property\n");
+ 		return -ENXIO;
+@@ -82,7 +80,7 @@ static const struct udevice_id psci_of_m
+ 	{ .compatible = "arm,psci" },
+ 	{ .compatible = "arm,psci-0.2" },
+ 	{ .compatible = "arm,psci-1.0" },
+-	{},
++	{}
+ };
+ 
+ U_BOOT_DRIVER(psci) = {
+Index: u-boot/drivers/pinctrl/pinctrl_stm32.c
+===================================================================
+--- u-boot.orig/drivers/pinctrl/pinctrl_stm32.c
++++ u-boot/drivers/pinctrl/pinctrl_stm32.c
+@@ -280,7 +280,8 @@ static int prep_gpio_dsc(struct stm32_gp
+ 	return 0;
+ }
+ 
+-static int prep_gpio_ctl(struct stm32_gpio_ctl *gpio_ctl, u32 gpio_fn, int node)
++static int prep_gpio_ctl(struct stm32_gpio_ctl *gpio_ctl, u32 gpio_fn,
++			 ofnode node)
+ {
+ 	gpio_fn &= 0x00FF;
+ 	gpio_ctl->af = 0;
+@@ -301,16 +302,16 @@ static int prep_gpio_ctl(struct stm32_gp
+ 		break;
+ 	}
+ 
+-	gpio_ctl->speed = fdtdec_get_int(gd->fdt_blob, node, "slew-rate", 0);
++	gpio_ctl->speed = ofnode_read_u32_default(node, "slew-rate", 0);
+ 
+-	if (fdtdec_get_bool(gd->fdt_blob, node, "drive-open-drain"))
++	if (ofnode_read_bool(node, "drive-open-drain"))
+ 		gpio_ctl->otype = STM32_GPIO_OTYPE_OD;
+ 	else
+ 		gpio_ctl->otype = STM32_GPIO_OTYPE_PP;
+ 
+-	if (fdtdec_get_bool(gd->fdt_blob, node, "bias-pull-up"))
++	if (ofnode_read_bool(node, "bias-pull-up"))
+ 		gpio_ctl->pupd = STM32_GPIO_PUPD_UP;
+-	else if (fdtdec_get_bool(gd->fdt_blob, node, "bias-pull-down"))
++	else if (ofnode_read_bool(node, "bias-pull-down"))
+ 		gpio_ctl->pupd = STM32_GPIO_PUPD_DOWN;
+ 	else
+ 		gpio_ctl->pupd = STM32_GPIO_PUPD_NO;
+@@ -322,7 +323,7 @@ static int prep_gpio_ctl(struct stm32_gp
+ 	return 0;
+ }
+ 
+-static int stm32_pinctrl_config(int offset)
++static int stm32_pinctrl_config(ofnode node)
+ {
+ 	u32 pin_mux[MAX_PINS_ONE_IP];
+ 	int rv, len;
+@@ -331,23 +332,29 @@ static int stm32_pinctrl_config(int offs
+ 	 * check for "pinmux" property in each subnode (e.g. pins1 and pins2 for
+ 	 * usart1) of pin controller phandle "pinctrl-0"
+ 	 */
+-	fdt_for_each_subnode(offset, gd->fdt_blob, offset) {
++
++	ofnode_for_each_subnode(node, node) {
+ 		struct stm32_gpio_dsc gpio_dsc;
+ 		struct stm32_gpio_ctl gpio_ctl;
+ 		int i;
+ 
+-		len = fdtdec_get_int_array_count(gd->fdt_blob, offset,
+-						 "pinmux", pin_mux,
+-						 ARRAY_SIZE(pin_mux));
+-		debug("%s: no of pinmux entries= %d\n", __func__, len);
++		len = ofnode_read_size(node, "pinmux");
+ 		if (len < 0)
+-			return -EINVAL;
++			return len;
++		len /= sizeof(u32);
++		if (len > ARRAY_SIZE(pin_mux))
++			return -EOVERFLOW;
++		rv = ofnode_read_u32_array(node, "pinmux", pin_mux, len);
++		debug("%s: no of '%s' pinmux entries=%d\n", __func__,
++		      ofnode_get_name(node), len);
++		if (rv < 0)
++			return rv;
+ 		for (i = 0; i < len; i++) {
+ 			struct gpio_desc desc;
+ 
+ 			debug("%s: pinmux = %x\n", __func__, *(pin_mux + i));
+ 			prep_gpio_dsc(&gpio_dsc, *(pin_mux + i));
+-			prep_gpio_ctl(&gpio_ctl, *(pin_mux + i), offset);
++			prep_gpio_ctl(&gpio_ctl, *(pin_mux + i), node);
+ 			rv = uclass_get_device_by_seq(UCLASS_GPIO,
+ 						      gpio_dsc.port,
+ 						      &desc.dev);
+@@ -396,7 +403,7 @@ static int stm32_pinctrl_bind(struct ude
+ #if CONFIG_IS_ENABLED(PINCTRL_FULL)
+ static int stm32_pinctrl_set_state(struct udevice *dev, struct udevice *config)
+ {
+-	return stm32_pinctrl_config(dev_of_offset(config));
++	return stm32_pinctrl_config(dev_ofnode(config));
+ }
+ #else /* PINCTRL_FULL */
+ static int stm32_pinctrl_set_state_simple(struct udevice *dev,
+@@ -405,7 +412,7 @@ static int stm32_pinctrl_set_state_simpl
+ 	const void *fdt = gd->fdt_blob;
+ 	const fdt32_t *list;
+ 	uint32_t phandle;
+-	int config_node;
++	ofnode config_node;
+ 	int size, i, ret;
+ 
+ 	list = fdt_getprop(fdt, dev_of_offset(periph), "pinctrl-0", &size);
+@@ -418,8 +425,8 @@ static int stm32_pinctrl_set_state_simpl
+ 	for (i = 0; i < size; i++) {
+ 		phandle = fdt32_to_cpu(*list++);
+ 
+-		config_node = fdt_node_offset_by_phandle(fdt, phandle);
+-		if (config_node < 0) {
++		config_node = ofnode_get_by_phandle(phandle);
++		if (!ofnode_valid(config_node)) {
+ 			pr_err("prop pinctrl-0 index %d invalid phandle\n", i);
+ 			return -EINVAL;
+ 		}
+Index: u-boot/drivers/watchdog/stm32mp_wdt.c
+===================================================================
+--- u-boot.orig/drivers/watchdog/stm32mp_wdt.c
++++ u-boot/drivers/watchdog/stm32mp_wdt.c
+@@ -93,7 +93,7 @@ static int stm32mp_wdt_probe(struct udev
+ 
+ 	debug("IWDG init\n");
+ 
+-	priv->base = devfdt_get_addr(dev);
++	priv->base = dev_read_addr(dev);
+ 	if (priv->base == FDT_ADDR_T_NONE)
+ 		return -EINVAL;
+ 
+Index: u-boot/include/usb/dwc2_udc.h
+===================================================================
+--- u-boot.orig/include/usb/dwc2_udc.h
++++ u-boot/include/usb/dwc2_udc.h
+@@ -8,7 +8,9 @@
+ #ifndef __DWC2_USB_GADGET
+ #define __DWC2_USB_GADGET
+ 
+-#define PHY0_SLEEP              (1 << 5)
++#include <dm/ofnode.h>
++
++#define PHY0_SLEEP		BIT(5)
+ 
+ #define DWC2_MAX_HW_ENDPOINTS	16
+ #define DWC2_SIZE_NB_OFFS	0
+@@ -16,7 +18,7 @@
+ 
+ struct dwc2_plat_otg_data {
+ 	void		*priv;
+-	int		phy_of_node;
++	ofnode		phy_of_node;
+ 	int		(*phy_control)(int on);
+ 	unsigned int	regs_phy;
+ 	uintptr_t	regs_otg;
+Index: u-boot/drivers/core/fdtaddr.c
+===================================================================
+--- u-boot.orig/drivers/core/fdtaddr.c
++++ u-boot/drivers/core/fdtaddr.c
+@@ -21,6 +21,7 @@ fdt_addr_t devfdt_get_addr_index(struct
+ #if CONFIG_IS_ENABLED(OF_CONTROL) && !CONFIG_IS_ENABLED(OF_PLATDATA)
+ 	fdt_addr_t addr;
+ 
++	WARN_ON(of_live_active());
+ 	if (CONFIG_IS_ENABLED(OF_TRANSLATE)) {
+ 		const fdt32_t *reg;
+ 		int len = 0;
+@@ -42,7 +43,8 @@ fdt_addr_t devfdt_get_addr_index(struct
+ 		reg = fdt_getprop(gd->fdt_blob, dev_of_offset(dev), "reg",
+ 				  &len);
+ 		if (!reg || (len <= (index * sizeof(fdt32_t) * (na + ns)))) {
+-			debug("Req index out of range\n");
++			debug("Req index %u out of range 0..%d / (%d * %d)\n",
++			      index, len, na, ns);
+ 			return FDT_ADDR_T_NONE;
+ 		}
+ 

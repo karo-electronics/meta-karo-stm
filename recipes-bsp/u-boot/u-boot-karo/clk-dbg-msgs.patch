@@ -54,15 +54,6 @@ Index: u-boot/drivers/clk/clk-uclass.c
  		return ret;
  	}
  
-@@ -106,7 +107,7 @@ int clk_get_by_index(struct udevice *dev
- int clk_get_bulk(struct udevice *dev, struct clk_bulk *bulk)
- {
- 	int i, ret, err, count;
--	
-+
- 	bulk->count = 0;
- 
- 	count = dev_count_phandle_with_args(dev, "clocks", "#clock-cells");
 @@ -130,8 +131,8 @@ int clk_get_bulk(struct udevice *dev, st
  bulk_get_err:
  	err = clk_release_all(bulk->clks, bulk->count);
